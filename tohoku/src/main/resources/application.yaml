@@ -1,0 +1,20 @@
+server:
+  port: 8081
+spring:
+  profiles:
+    active: dev #切换不同环境的配置信息
+  mvc:
+    view:
+      prefix: /WEB-INF/view/
+      suffix: .jsp
+  jedis:
+    host: localhost
+    port: 6379
+    password: pwd123456
+
+mybatis:
+  mapperLocations: classpath*:mapper/*Dao.xml
+  typeAliasesPackage: com.crawl.tohoku.entity
+
+proxy.page.proxy.queueName: tohoku-proxy-page-proxy-list
+target.page.proxy.queueName: tohoku-page-proxy-list

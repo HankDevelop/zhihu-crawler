@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.crawl.tohoku.dao.TransWordInfoDao">
+  <resultMap id="BaseResultMap" type="com.crawl.tohoku.entity.TransWordInfo">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="trans_word" jdbcType="VARCHAR" property="transWord" />
+    <result column="word_length" jdbcType="INTEGER" property="wordLength" />
+    <result column="word_pos" jdbcType="VARCHAR" property="wordPos" />
+    <result column="trans_content" jdbcType="VARCHAR" property="transContent" />
+    <result column="word_level" jdbcType="INTEGER" property="wordLevel" />
+    <result column="translation" jdbcType="VARCHAR" property="translation" />
+    <result column="dict_type" jdbcType="VARCHAR" property="dictType" />
+    <result column="source_url" jdbcType="VARCHAR" property="sourceUrl" />
+    <result column="real_path" jdbcType="VARCHAR" property="realPath" />
+    <result column="dict_status" jdbcType="INTEGER" property="dictStatus" />
+    <result column="word_pos1" jdbcType="VARCHAR" property="wordPos1" />
+    <result column="trans_content1" jdbcType="VARCHAR" property="transContent1" />
+    <result column="word_pos2" jdbcType="VARCHAR" property="wordPos2" />
+    <result column="trans_content2" jdbcType="VARCHAR" property="transContent2" />
+    <result column="word_pos3" jdbcType="VARCHAR" property="wordPos3" />
+    <result column="trans_content3" jdbcType="VARCHAR" property="transContent3" />
+    <result column="word_pos4" jdbcType="VARCHAR" property="wordPos4" />
+    <result column="trans_content4" jdbcType="VARCHAR" property="transContent4" />
+    <result column="proofreader" jdbcType="VARCHAR" property="proofreader" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, trans_word, word_length, word_pos, trans_content, word_level, `translation`, 
+    dict_type, source_url, real_path, dict_status, word_pos1, trans_content1, word_pos2, 
+    trans_content2, word_pos3, trans_content3, word_pos4, trans_content4, proofreader
+  </sql>
+  <select id="selectByExample" parameterType="com.crawl.tohoku.entity.TransWordInfoExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from trans_word_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+    <if test="limit != null">
+      <if test="offset != null">
+        limit ${offset}, ${limit}
+      </if>
+      <if test="offset == null">
+        limit ${limit}
+      </if>
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from trans_word_info
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from trans_word_info
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.crawl.tohoku.entity.TransWordInfoExample">
+    delete from trans_word_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.crawl.tohoku.entity.TransWordInfo" useGeneratedKeys="true">
+    insert into trans_word_info (trans_word, word_length, word_pos, 
+      trans_content, word_level, `translation`, 
+      dict_type, source_url, real_path, 
+      dict_status, word_pos1, trans_content1, 
+      word_pos2, trans_content2, word_pos3, 
+      trans_content3, word_pos4, trans_content4, 
+      proofreader)
+    values (#{transWord,jdbcType=VARCHAR}, #{wordLength,jdbcType=INTEGER}, #{wordPos,jdbcType=VARCHAR}, 
+      #{transContent,jdbcType=VARCHAR}, #{wordLevel,jdbcType=INTEGER}, #{translation,jdbcType=VARCHAR}, 
+      #{dictType,jdbcType=VARCHAR}, #{sourceUrl,jdbcType=VARCHAR}, #{realPath,jdbcType=VARCHAR}, 
+      #{dictStatus,jdbcType=INTEGER}, #{wordPos1,jdbcType=VARCHAR}, #{transContent1,jdbcType=VARCHAR}, 
+      #{wordPos2,jdbcType=VARCHAR}, #{transContent2,jdbcType=VARCHAR}, #{wordPos3,jdbcType=VARCHAR}, 
+      #{transContent3,jdbcType=VARCHAR}, #{wordPos4,jdbcType=VARCHAR}, #{transContent4,jdbcType=VARCHAR}, 
+      #{proofreader,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.crawl.tohoku.entity.TransWordInfo" useGeneratedKeys="true">
+    insert into trans_word_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="transWord != null">
+        trans_word,
+      </if>
+      <if test="wordLength != null">
+        word_length,
+      </if>
+      <if test="wordPos != null">
+        word_pos,
+      </if>
+      <if test="transContent != null">
+        trans_content,
+      </if>
+      <if test="wordLevel != null">
+        word_level,
+      </if>
+      <if test="translation != null">
+        `translation`,
+      </if>
+      <if test="dictType != null">
+        dict_type,
+      </if>
+      <if test="sourceUrl != null">
+        source_url,
+      </if>
+      <if test="realPath != null">
+        real_path,
+      </if>
+      <if test="dictStatus != null">
+        dict_status,
+      </if>
+      <if test="wordPos1 != null">
+        word_pos1,
+      </if>
+      <if test="transContent1 != null">
+        trans_content1,
+      </if>
+      <if test="wordPos2 != null">
+        word_pos2,
+      </if>
+      <if test="transContent2 != null">
+        trans_content2,
+      </if>
+      <if test="wordPos3 != null">
+        word_pos3,
+      </if>
+      <if test="transContent3 != null">
+        trans_content3,
+      </if>
+      <if test="wordPos4 != null">
+        word_pos4,
+      </if>
+      <if test="transContent4 != null">
+        trans_content4,
+      </if>
+      <if test="proofreader != null">
+        proofreader,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="transWord != null">
+        #{transWord,jdbcType=VARCHAR},
+      </if>
+      <if test="wordLength != null">
+        #{wordLength,jdbcType=INTEGER},
+      </if>
+      <if test="wordPos != null">
+        #{wordPos,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent != null">
+        #{transContent,jdbcType=VARCHAR},
+      </if>
+      <if test="wordLevel != null">
+        #{wordLevel,jdbcType=INTEGER},
+      </if>
+      <if test="translation != null">
+        #{translation,jdbcType=VARCHAR},
+      </if>
+      <if test="dictType != null">
+        #{dictType,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceUrl != null">
+        #{sourceUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="realPath != null">
+        #{realPath,jdbcType=VARCHAR},
+      </if>
+      <if test="dictStatus != null">
+        #{dictStatus,jdbcType=INTEGER},
+      </if>
+      <if test="wordPos1 != null">
+        #{wordPos1,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent1 != null">
+        #{transContent1,jdbcType=VARCHAR},
+      </if>
+      <if test="wordPos2 != null">
+        #{wordPos2,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent2 != null">
+        #{transContent2,jdbcType=VARCHAR},
+      </if>
+      <if test="wordPos3 != null">
+        #{wordPos3,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent3 != null">
+        #{transContent3,jdbcType=VARCHAR},
+      </if>
+      <if test="wordPos4 != null">
+        #{wordPos4,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent4 != null">
+        #{transContent4,jdbcType=VARCHAR},
+      </if>
+      <if test="proofreader != null">
+        #{proofreader,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.crawl.tohoku.entity.TransWordInfoExample" resultType="java.lang.Long">
+    select count(*) from trans_word_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update trans_word_info
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.transWord != null">
+        trans_word = #{record.transWord,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wordLength != null">
+        word_length = #{record.wordLength,jdbcType=INTEGER},
+      </if>
+      <if test="record.wordPos != null">
+        word_pos = #{record.wordPos,jdbcType=VARCHAR},
+      </if>
+      <if test="record.transContent != null">
+        trans_content = #{record.transContent,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wordLevel != null">
+        word_level = #{record.wordLevel,jdbcType=INTEGER},
+      </if>
+      <if test="record.translation != null">
+        `translation` = #{record.translation,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dictType != null">
+        dict_type = #{record.dictType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sourceUrl != null">
+        source_url = #{record.sourceUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="record.realPath != null">
+        real_path = #{record.realPath,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dictStatus != null">
+        dict_status = #{record.dictStatus,jdbcType=INTEGER},
+      </if>
+      <if test="record.wordPos1 != null">
+        word_pos1 = #{record.wordPos1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.transContent1 != null">
+        trans_content1 = #{record.transContent1,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wordPos2 != null">
+        word_pos2 = #{record.wordPos2,jdbcType=VARCHAR},
+      </if>
+      <if test="record.transContent2 != null">
+        trans_content2 = #{record.transContent2,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wordPos3 != null">
+        word_pos3 = #{record.wordPos3,jdbcType=VARCHAR},
+      </if>
+      <if test="record.transContent3 != null">
+        trans_content3 = #{record.transContent3,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wordPos4 != null">
+        word_pos4 = #{record.wordPos4,jdbcType=VARCHAR},
+      </if>
+      <if test="record.transContent4 != null">
+        trans_content4 = #{record.transContent4,jdbcType=VARCHAR},
+      </if>
+      <if test="record.proofreader != null">
+        proofreader = #{record.proofreader,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update trans_word_info
+    set id = #{record.id,jdbcType=BIGINT},
+      trans_word = #{record.transWord,jdbcType=VARCHAR},
+      word_length = #{record.wordLength,jdbcType=INTEGER},
+      word_pos = #{record.wordPos,jdbcType=VARCHAR},
+      trans_content = #{record.transContent,jdbcType=VARCHAR},
+      word_level = #{record.wordLevel,jdbcType=INTEGER},
+      `translation` = #{record.translation,jdbcType=VARCHAR},
+      dict_type = #{record.dictType,jdbcType=VARCHAR},
+      source_url = #{record.sourceUrl,jdbcType=VARCHAR},
+      real_path = #{record.realPath,jdbcType=VARCHAR},
+      dict_status = #{record.dictStatus,jdbcType=INTEGER},
+      word_pos1 = #{record.wordPos1,jdbcType=VARCHAR},
+      trans_content1 = #{record.transContent1,jdbcType=VARCHAR},
+      word_pos2 = #{record.wordPos2,jdbcType=VARCHAR},
+      trans_content2 = #{record.transContent2,jdbcType=VARCHAR},
+      word_pos3 = #{record.wordPos3,jdbcType=VARCHAR},
+      trans_content3 = #{record.transContent3,jdbcType=VARCHAR},
+      word_pos4 = #{record.wordPos4,jdbcType=VARCHAR},
+      trans_content4 = #{record.transContent4,jdbcType=VARCHAR},
+      proofreader = #{record.proofreader,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.crawl.tohoku.entity.TransWordInfo">
+    update trans_word_info
+    <set>
+      <if test="transWord != null">
+        trans_word = #{transWord,jdbcType=VARCHAR},
+      </if>
+      <if test="wordLength != null">
+        word_length = #{wordLength,jdbcType=INTEGER},
+      </if>
+      <if test="wordPos != null">
+        word_pos = #{wordPos,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent != null">
+        trans_content = #{transContent,jdbcType=VARCHAR},
+      </if>
+      <if test="wordLevel != null">
+        word_level = #{wordLevel,jdbcType=INTEGER},
+      </if>
+      <if test="translation != null">
+        `translation` = #{translation,jdbcType=VARCHAR},
+      </if>
+      <if test="dictType != null">
+        dict_type = #{dictType,jdbcType=VARCHAR},
+      </if>
+      <if test="sourceUrl != null">
+        source_url = #{sourceUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="realPath != null">
+        real_path = #{realPath,jdbcType=VARCHAR},
+      </if>
+      <if test="dictStatus != null">
+        dict_status = #{dictStatus,jdbcType=INTEGER},
+      </if>
+      <if test="wordPos1 != null">
+        word_pos1 = #{wordPos1,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent1 != null">
+        trans_content1 = #{transContent1,jdbcType=VARCHAR},
+      </if>
+      <if test="wordPos2 != null">
+        word_pos2 = #{wordPos2,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent2 != null">
+        trans_content2 = #{transContent2,jdbcType=VARCHAR},
+      </if>
+      <if test="wordPos3 != null">
+        word_pos3 = #{wordPos3,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent3 != null">
+        trans_content3 = #{transContent3,jdbcType=VARCHAR},
+      </if>
+      <if test="wordPos4 != null">
+        word_pos4 = #{wordPos4,jdbcType=VARCHAR},
+      </if>
+      <if test="transContent4 != null">
+        trans_content4 = #{transContent4,jdbcType=VARCHAR},
+      </if>
+      <if test="proofreader != null">
+        proofreader = #{proofreader,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.crawl.tohoku.entity.TransWordInfo">
+    update trans_word_info
+    set trans_word = #{transWord,jdbcType=VARCHAR},
+      word_length = #{wordLength,jdbcType=INTEGER},
+      word_pos = #{wordPos,jdbcType=VARCHAR},
+      trans_content = #{transContent,jdbcType=VARCHAR},
+      word_level = #{wordLevel,jdbcType=INTEGER},
+      `translation` = #{translation,jdbcType=VARCHAR},
+      dict_type = #{dictType,jdbcType=VARCHAR},
+      source_url = #{sourceUrl,jdbcType=VARCHAR},
+      real_path = #{realPath,jdbcType=VARCHAR},
+      dict_status = #{dictStatus,jdbcType=INTEGER},
+      word_pos1 = #{wordPos1,jdbcType=VARCHAR},
+      trans_content1 = #{transContent1,jdbcType=VARCHAR},
+      word_pos2 = #{wordPos2,jdbcType=VARCHAR},
+      trans_content2 = #{transContent2,jdbcType=VARCHAR},
+      word_pos3 = #{wordPos3,jdbcType=VARCHAR},
+      trans_content3 = #{transContent3,jdbcType=VARCHAR},
+      word_pos4 = #{wordPos4,jdbcType=VARCHAR},
+      trans_content4 = #{transContent4,jdbcType=VARCHAR},
+      proofreader = #{proofreader,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
