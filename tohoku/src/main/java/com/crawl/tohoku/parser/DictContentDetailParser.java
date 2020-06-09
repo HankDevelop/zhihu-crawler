@@ -1,6 +1,7 @@
 package com.crawl.tohoku.parser;
 
 import com.crawl.tohoku.TohokuConstants;
+import com.crawl.tohoku.TohokuHttpClient;
 import com.crawl.tohoku.entity.TransWordInfo;
 import com.github.wycm.common.Page;
 import com.github.wycm.common.parser.ListPageParser;
@@ -19,7 +20,7 @@ import java.util.List;
 @Component("dictContentDetailParser")
 public class DictContentDetailParser implements ListPageParser<TransWordInfo> {
 
-    /*private static DictContentDetailParser instance;
+    private static DictContentDetailParser instance;
 
     public static DictContentDetailParser getInstance() {
         if (instance == null) {
@@ -33,7 +34,7 @@ public class DictContentDetailParser implements ListPageParser<TransWordInfo> {
     }
 
     private DictContentDetailParser() {
-    }*/
+    }
 
     @Override
     public List<TransWordInfo> parseListPage(Page page) {
