@@ -92,11 +92,12 @@ public class TohokuDictQueryTask extends AbstractPageTask {
         }
         logger.debug(dictItems.toString());
         parseWordCount.getAndAdd(dictItems.size());
-        try {
+        /*try {
             tohokuComponent.getTohokuHttpClient().getExchangeQueue().put(dictItems);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
+        log.info(dictItems.toString());
         for (TransWordInfo dictItem : dictItems) {
             if (StringUtils.isNotBlank(dictItem.getRealPath())) {
                 String path = TohokuConstants.DOWNLOAD_PATH + dictItem.getDictType()+ "/"+dictItem.getRealPath()+".png";
