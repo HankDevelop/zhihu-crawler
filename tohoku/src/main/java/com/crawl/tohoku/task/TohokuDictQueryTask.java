@@ -1,7 +1,6 @@
 package com.crawl.tohoku.task;
 
 import com.crawl.tohoku.TohokuConstants;
-import com.crawl.tohoku.entity.DictItem;
 import com.crawl.tohoku.entity.TransWordInfo;
 import com.crawl.tohoku.parser.DictContentDetailParser;
 import com.crawl.tohoku.service.TohokuComponent;
@@ -16,10 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import sun.util.resources.cldr.rw.CalendarData_rw_RW;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.List;
 
@@ -32,18 +28,16 @@ import static com.crawl.tohoku.TohokuHttpClient.*;
 public class TohokuDictQueryTask extends AbstractPageTask {
 
     private static Logger logger = LoggerFactory.getLogger(TohokuDictQueryTask.class);
-
-    @Resource(name = "dictContentDetailParser")
-    private ListPageParser listPageParser;
+    private ListPageParser listPageParser = DictContentDetailParser.getInstance();
     private String queryParams;
-    @Autowired
     private TohokuComponent tohokuComponent;
 
-    public TohokuDictQueryTask(CrawlerMessage crawlerMessage) {
+    public TohokuDictQueryTask(CrawlerMessage crawlerMessage, TohokuComponent tohokuComponent) {
         this.crawlerMessage = crawlerMessage;
         if (crawlerMessage != null && !crawlerMessage.getMessageContext().isEmpty() && crawlerMessage.getMessageContext().containsKey("keyword")) {
             this.queryParams = crawlerMessage.getMessageContext().get("keyword").get(0);
         }
+        this.tohokuComponent = tohokuComponent;
         this.proxyFlag = true;
 //        request.addHeader("Content-Type", "application/x-www-form-urlencoded");
     }
@@ -53,7 +47,7 @@ public class TohokuDictQueryTask extends AbstractPageTask {
         if (Constants.stopService){
             return;
         }
-        TohokuDictQueryTask task = new TohokuDictQueryTask(crawlerMessage);
+        TohokuDictQueryTask task = new TohokuDictQueryTask(crawlerMessage, tohokuComponent);
         ThreadPoolUtil.getThreadPool(this.getClass()).execute(task);
         log.info("create new {} success", this.getClass().getSimpleName());
     }

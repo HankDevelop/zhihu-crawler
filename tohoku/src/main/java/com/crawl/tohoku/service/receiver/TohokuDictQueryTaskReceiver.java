@@ -21,7 +21,7 @@ public class TohokuDictQueryTaskReceiver extends BaseReceiver{
 
     @Override
     protected Runnable createNewTask(CrawlerMessage crawlerMessage) {
-        TohokuDictQueryTask task = new TohokuDictQueryTask(crawlerMessage);
+        TohokuDictQueryTask task = new TohokuDictQueryTask(crawlerMessage, tohokuComponent);
         task.setUrl(crawlerMessage.getUrl());
         task.setCurrentRetryTimes(crawlerMessage.getCurrentRetryTimes());
         task.setProxyFlag(true);
