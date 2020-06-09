@@ -6,10 +6,12 @@ import com.github.wycm.common.util.CrawlerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.cookie.CookieStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import redis.clients.jedis.JedisPool;
 
 
 @Slf4j
+@Component
 public class ProxyHttpClient extends AbstractHttpClient {
     @Autowired
     private LocalIPService localIPService;

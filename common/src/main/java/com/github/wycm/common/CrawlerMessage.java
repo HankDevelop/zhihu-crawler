@@ -3,6 +3,7 @@ package com.github.wycm.common;
 import lombok.Data;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,7 +18,7 @@ public class CrawlerMessage {
     /**
      * 消息上下文
      */
-    private Map<String, String> messageContext = new HashMap<>();
+    private Map<String, List<String>> messageContext = new HashMap<>();
     private String sendTime;
 
     public CrawlerMessage(){
@@ -26,6 +27,11 @@ public class CrawlerMessage {
 
     public CrawlerMessage(String url) {
         this.url = url;
+    }
+
+    public CrawlerMessage(String url, Map<String, List<String>> messageContext) {
+        this.url = url;
+        this.messageContext = messageContext;
     }
 
     public CrawlerMessage(String url, int currentRetryTimes) {

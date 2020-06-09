@@ -37,7 +37,7 @@ public class LocalIPService {
     public void initIp(){
         try {
             String s = new SimpleHttpClient(jedisPool).get("http://www.httpbin.org/ip");
-            this.localIp = JSONObject.parseObject(s).getString("origin");
+            localIp = JSONObject.parseObject(s).getString("origin");
             Proxy proxy = new Proxy(localIp, DIRECT_CONNECT_PORT, Constants.TIME_INTERVAL);
             proxy.setLastUseTime(proxyQueue.getRedisServerTime());
             proxyQueue.addProxy(commonProperties.getProxyPageProxyQueueName(), proxy);

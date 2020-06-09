@@ -1,7 +1,6 @@
 package com.github.wycm.proxy;
 
 import com.github.wycm.common.*;
-import com.github.wycm.common.util.Constants;
 import com.github.wycm.common.util.SimpleHttpClient;
 import com.github.wycm.proxy.util.ProxyUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +8,7 @@ import org.asynchttpclient.Response;
 import org.asynchttpclient.proxy.ProxyServer;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -49,6 +49,14 @@ public abstract class AbstractHttpClient {
         return asyncGet(url, response);
     }
 
+    public Page asyncPost(String url, Map<String, List<String>> paramMap, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+        if (userAgent == null){
+            return asyncGet(url, proxyServer);
+        }
+        Response response = httpClient.getResponse(url, paramMap, proxyServer, userAgent, headers);
+        return asyncGet(url, response);
+    }
+
     public Page asyncGet(String url, Response response) throws ExecutionException, InterruptedException {
         Page page = new Page();
         page.setStatusCode(response.getStatusCode());
@@ -67,9 +75,9 @@ public abstract class AbstractHttpClient {
                 currentProxy = proxyQueue.takeProxy(commonProperties.getTargetPageProxyQueueName());
                 requestStartTime = System.currentTimeMillis();
 
-                if(!(currentProxy.getIp().equals(getLocalIPService().getLocalIp()))){
+                if(!(currentProxy.getIp().equals(LocalIPService.getLocalIp()))){
                     //代理
-                    page = this.asyncGet(crawlerMessage.getUrl(), new ProxyServer.Builder(currentProxy.getIp(), currentProxy.getPort()).build(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
+                    page = this.asyncPost(crawlerMessage.getUrl(), crawlerMessage.getMessageContext(), new ProxyServer.Builder(currentProxy.getIp(), currentProxy.getPort()).build(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
                 } else {
                     page = this.asyncGet(crawlerMessage.getUrl(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
                 }

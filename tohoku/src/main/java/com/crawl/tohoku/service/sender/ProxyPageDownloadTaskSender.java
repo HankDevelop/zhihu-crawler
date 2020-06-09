@@ -13,24 +13,28 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
+
 @Slf4j
 @Service
 public class ProxyPageDownloadTaskSender extends BaseSender{
     @Autowired
     TaskQueueService taskQueueService;
 
+    private static final int initQueueSize = 50;
     @Autowired
     private ProxyPageProxyPool proxyPageProxyPool;
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 60 * 60)
     @Override
+    @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 60 * 60)
     public void send() {
         log.info("start send ProxyPageDownloadTask message");
-        if (taskQueueService.queueSize(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class)) > 1000){
-            log.info(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class) + "size more than 1000, not send task");
+
+        if (taskQueueService.queueSize(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class)) > initQueueSize){
+            log.info(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class) + "size more than " + initQueueSize + ", not send task");
             return;
         }
-        new Thread(() -> {
+        newSingleThreadExecutor().submit(() -> {
             ProxyPageProxyPool.proxyMap.keySet().forEach(url -> {
                 String requestId = UUID.randomUUID().toString();
                 if (redisLockUtil.lock(CrawlerUtils.getLockKeyPrefix(TohokuProxyPageDownloadTask.class) + url
@@ -49,7 +53,7 @@ public class ProxyPageDownloadTaskSender extends BaseSender{
                 }
             });
             log.info("end send ProxyPageDownloadTask message");
-        }).start();
+        });
 
     }
 }

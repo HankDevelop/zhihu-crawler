@@ -31,7 +31,7 @@ public class ResultFileWriteTask extends Thread{
     private TohokuComponent tohokuComponent;
 
     @Override
-    @Scheduled(initialDelay = 5000, fixedDelay = USER_TASK_DELAY)
+//    @Scheduled(initialDelay = 5000, fixedDelay = USER_TASK_DELAY)
     public void run() {
         BlockingQueue<List<TransWordInfo>> exchangeQueue = tohokuComponent.getTohokuHttpClient().getExchangeQueue();
 

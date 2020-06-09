@@ -10,9 +10,11 @@ import org.asynchttpclient.cookie.CookieStore;
 import org.asynchttpclient.cookie.ThreadSafeCookieStore;
 import org.asynchttpclient.proxy.ProxyServer;
 import org.asynchttpclient.uri.Uri;
+import org.asynchttpclient.util.HttpConstants;
 import redis.clients.jedis.JedisPool;
 
 import javax.net.ssl.SSLException;
+import java.io.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,10 @@ public class SimpleHttpClient {
     protected JedisPool jedisPool = null;
 
     private int timeout = 10000;
+
+    public SimpleHttpClient(){
+        this(null);
+    }
 
     public SimpleHttpClient(JedisPool jedisPool){
         this(500, 2000, jedisPool);
@@ -125,6 +131,19 @@ public class SimpleHttpClient {
         return executeRequest(builder.build());
     }
 
+    public Response getResponse(String url, Map<String, List<String>> paramMap, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+//        proxyServer = new ProxyServer.Builder("127.0.0.1", 8888).build();
+        RequestBuilder builder = new RequestBuilder();
+        builder.resetCookies();
+        builder.setUrl(url)
+                .setMethod(HttpConstants.Methods.POST)
+                .setProxyServer(proxyServer)
+                .setHeader("user-agent", userAgent)
+                .setFormParams(paramMap);
+        headers.forEach(builder::setHeader);
+        return executeRequest(builder.build());
+    }
+
     public Response executeRequest(Request request) throws InterruptedException, ExecutionException {
         Response res = null;
 
@@ -141,6 +160,72 @@ public class SimpleHttpClient {
             semaphoreMap.get(domain).release();
         }
         return res;
+    }
+
+    /**
+     * 下载图片
+     * @param fileURL 文件地址
+     * @param path 保存路径
+     * @param saveFileName 文件名，包括后缀名
+     * @param isReplaceFile 若存在文件时，是否还需要下载文件
+     */
+    public void downloadFile(String fileURL,
+                                    String path,
+                                    String saveFileName,
+                                    Boolean isReplaceFile){
+        Request request = new RequestBuilder()
+                .setUrl(fileURL)
+                .setHeader("user-agent", Constants.userAgentArray[new Random().nextInt(Constants.userAgentArray.length)])
+                .build();
+        downloadFile(request, path, saveFileName, isReplaceFile);
+    }
+
+    public void downloadFile(Request request,
+                                    String path,
+                                    String saveFileName,
+                                    Boolean isReplaceFile){
+        try{
+            Response response = executeRequest(request);
+            log.debug("status:" + response.getStatusCode());
+            File file =new File(path);
+            //如果文件夹不存在则创建
+            if  (!file .exists()  && !file .isDirectory()){
+                file.mkdirs();
+            } else{
+                log.debug("//目录存在");
+            }
+            file = new File(path + "/" + saveFileName);
+            if(!file.exists() || isReplaceFile){
+                //如果文件不存在，则下载
+                try {
+                    OutputStream os = new FileOutputStream(file);
+                    InputStream is = response.getResponseBodyAsStream();
+                    byte[] buff = new byte[(int) response.getResponseBodyAsBytes().length];
+                    while(true) {
+                        int readed = is.read(buff);
+                        if(readed == -1) {
+                            break;
+                        }
+                        byte[] temp = new byte[readed];
+                        System.arraycopy(buff, 0, temp, 0, readed);
+                        os.write(temp);
+                        log.debug("文件下载中....");
+                    }
+                    is.close();
+                    os.close();
+                    log.info(request.getUrl() + "--文件成功下载至" + path + "/" + saveFileName);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            else{
+                log.debug("该文件存在！");
+            }
+        } catch(IllegalArgumentException e){
+            log.info("连接超时...");
+        } catch(Exception e1){
+            e1.printStackTrace();
+        }
     }
 
     public static class IgnoreCookieStore implements CookieStore{

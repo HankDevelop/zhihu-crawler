@@ -87,12 +87,12 @@ public class TohokuDictQueryTaskSender extends BaseSender {
 
 
     //每天01:01:10时执行，抓取
-    @Scheduled(initialDelay = 5000, fixedDelay = USER_TASK_DELAY)
     @Override
+    @Scheduled(initialDelay = 5000, fixedDelay = USER_TASK_DELAY)
     public void send() {
+        log.info("start send query dict message");
         newSingleThreadExecutor().submit(() -> {
 
-            log.info("start send query dict message");
             Map<String, List<String>> paramMap = new HashMap<>();
             paramMap.put("searchRange", Arrays.asList("1"));
             paramMap.put("searchMethod", Arrays.asList("4"));
