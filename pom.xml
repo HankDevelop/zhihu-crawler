@@ -10,6 +10,7 @@
     <module>proxy</module>
     <module>zhihu</module>
     <module>common</module>
+    <module>tohoku</module>
   </modules>
   <packaging>pom</packaging>
 
