@@ -12,7 +12,6 @@ import org.apache.http.HttpStatus;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.proxy.ProxyServer;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -26,69 +25,61 @@ import java.util.function.Function;
  */
 @Slf4j
 public abstract class AbstractPageTask implements Runnable, RetryHandler, SinglePool {
-    @Getter
-    @Setter
-    protected String url;
+	@Getter@Setter
+	protected String url;
 
-    protected Request asyncRequest;
+	protected Request asyncRequest;
 
-    @Getter
-    protected final static Function<String, Boolean> jsonPageBannedFunction = (String s) -> !s.contains("login_status");
+	@Getter
+	protected final static Function<String, Boolean> jsonPageBannedFunction = (String s) -> !s.contains("login_status");
 
-    @Getter
-    protected final static Function<String, Boolean> htmlPageBannedFunction = (String s) -> s.equals("<html><header></header><body></body></html>");
+	@Getter
+	protected final static Function<String, Boolean> htmlPageBannedFunction = (String s) -> s.equals("<html><header></header><body></body></html>");
 
-    @Getter
-    @Setter
-    protected boolean proxyFlag;//是否通过代理下载
+	@Getter@Setter
+	protected boolean proxyFlag;//是否通过代理下载
 
-    protected Proxy currentProxy;//当前线程使用的代理
+	protected Proxy currentProxy;//当前线程使用的代理
 
-    @Getter
-    @Setter
-    protected int currentRetryTimes = 0;
+	@Getter@Setter
+	protected int currentRetryTimes = 0;
 
-    private String currentPoolName = null;
+	private String currentPoolName = null;
 
 
-    //当前任务是否需要重试
-    @Getter
-    @Setter
-    boolean isRetry = false;
+	//当前任务是否需要重试
+	@Getter@Setter
+	boolean isRetry = false;
 
-    @Getter
-    @Setter
-    protected CrawlerMessage crawlerMessage;
+	@Getter@Setter
+	protected CrawlerMessage crawlerMessage;
 
 
-    public AbstractPageTask() {
+	public AbstractPageTask(){
 
-    }
+	}
+	public AbstractPageTask(String url, boolean proxyFlag){
+		this.url = url;
+		this.proxyFlag = proxyFlag;
+	}
 
-    public AbstractPageTask(String url, boolean proxyFlag) {
-        this.url = url;
-        this.proxyFlag = proxyFlag;
-    }
+	public AbstractPageTask(String url, boolean proxyFlag, int currentRetryTimes){
+		this.url = url;
+		this.proxyFlag = proxyFlag;
+		this.currentRetryTimes = currentRetryTimes;
+	}
 
-    public AbstractPageTask(String url, boolean proxyFlag, int currentRetryTimes) {
-        this.url = url;
-        this.proxyFlag = proxyFlag;
-        this.currentRetryTimes = currentRetryTimes;
-    }
-
-    public AbstractPageTask(CrawlerMessage message) {
-        this.crawlerMessage = message;
-    }
-
-    @Override
-    public void run() {
-        long requestStartTime = 0L;
-        try {
-            Page page = null;
-            if (url != null) {
-                if (proxyFlag) {
-                    currentProxy = getProxyQueue().takeProxy(getProxyQueueName());
-                    requestStartTime = System.currentTimeMillis();
+	public AbstractPageTask(CrawlerMessage message){
+		this.crawlerMessage = message;
+	}
+	public void run(){
+		long requestStartTime = 0l;
+		try {
+			Page page = null;
+			if(url != null){
+				if (proxyFlag){
+					currentProxy = getProxyQueue().takeProxy(getProxyQueueName());
+					requestStartTime = System.currentTimeMillis();
 
                     if (!(currentProxy.getIp().equals(LocalIPService.getLocalIp()))) {
                         // messageContext 中内容为空则执行get请求 否则post
@@ -105,111 +96,112 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
                             page = getHttpClient().asyncPost(url, crawlerMessage.getMessageContext(), new ProxyServer.Builder(currentProxy.getIp(), currentProxy.getPort()).build(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
                         }
                     }
-                } else {
-                    requestStartTime = System.currentTimeMillis();
-                    page = getHttpClient().asyncGet(url, crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
-                }
-            }
-            long requestEndTime = System.currentTimeMillis();
-            page.setProxy(currentProxy);
-            int status = page.getStatusCode();
-            String logStr = Thread.currentThread().getName() + " " + currentProxy +
-                    "  executing request " + page.getUrl() + " response statusCode:" + status +
-                    "  request cost time:" + (requestEndTime - requestStartTime) + "ms";
-            if (status == HttpStatus.SC_OK && !responseError(page)) {
-                ProxyUtil.handleResponseSuccProxy(currentProxy);
-                handle(page);
-            } else {
-                log.error(logStr);
-                ProxyUtil.handleResponseFailedProxy(currentProxy);
-                retry();
-            }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
-        } catch (ExecutionException e) {
-            log.debug(e.getMessage(), e);
-            ProxyUtil.handleResponseFailedProxy(currentProxy);
-            try {
-                retry();
-            } catch (Exception e1) {
-                log.error(e1.getMessage(), e1);
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            if (currentProxy != null && !ProxyUtil.isDiscardProxy(currentProxy)) {
-                getProxyQueue().addProxy(getProxyQueueName(), currentProxy);
-            }
-            try {
-                receiveNewTask();
-            } catch (InterruptedException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-    }
+				}else {
+					requestStartTime = System.currentTimeMillis();
+					page = getHttpClient().asyncGet(url, crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
+				}
+			}
+			long requestEndTime = System.currentTimeMillis();
+			page.setProxy(currentProxy);
+			int status = page.getStatusCode();
+			String logStr = Thread.currentThread().getName() + " " + currentProxy +
+					"  executing request " + page.getUrl()  + " response statusCode:" + status +
+					"  request cost time:" + (requestEndTime - requestStartTime) + "ms";
+			if(status == HttpStatus.SC_OK && !responseError(page)){
+				ProxyUtil.handleResponseSuccProxy(currentProxy);
+				handle(page);
+			} else {
+				log.error(logStr);
+				ProxyUtil.handleResponseFailedProxy(currentProxy);
+				retry();
+			}
+		} catch (InterruptedException e) {
+			log.error(e.getMessage(), e);
+		} catch (ExecutionException e) {
+			log.debug(e.getMessage(), e);
+			ProxyUtil.handleResponseFailedProxy(currentProxy);
+			try {
+				retry();
+			} catch (Exception e1) {
+				log.error(e1.getMessage(), e1);
+			}
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
+		} finally {
+			if (currentProxy != null && !ProxyUtil.isDiscardProxy(currentProxy)){
+				getProxyQueue().addProxy(getProxyQueueName(), currentProxy);
+			}
+			try {
+			    receiveNewTask();
+			} catch (InterruptedException e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+	}
 
 
-    /**
-     * 子类实现page的处理
-     *
-     * @param page
-     */
-    protected abstract void handle(Page page);
 
 
-    protected void receiveNewTask() throws InterruptedException {
-        if (crawlerMessage != null && !Constants.stopService && !isRetry) {
-            CrawlerMessage message = getTaskQueueService().receiveTask(CrawlerUtils.getTaskQueueName(this.getClass()));
-            createNewTask(message);
-        }
-    }
+	/**
+	 * 子类实现page的处理
+	 * @param page
+	 */
+	protected abstract void handle(Page page);
 
-    protected abstract void createNewTask(CrawlerMessage crawlerMessage);
 
-    @Override
-    public String getCurrentThreadPoolName() {
-        if (this.currentPoolName == null) {
-            this.currentPoolName = ThreadPoolUtil.getThreadPoolName(this.getClass());
-        }
-        return this.currentPoolName;
-    }
+	protected void receiveNewTask() throws InterruptedException {
+		if (crawlerMessage != null && !Constants.stopService && !isRetry){
+			CrawlerMessage message = getTaskQueueService().receiveTask(CrawlerUtils.getTaskQueueName(this.getClass()));
+			createNewTask(message);
+		}
+	}
 
-    @Override
-    public ThreadPoolExecutor getCurrentThreadPool() {
-        return ThreadPoolUtil.getThreadPoolExecutorMap().get(getCurrentThreadPoolName());
-    }
+	protected abstract void createNewTask(CrawlerMessage crawlerMessage);
 
-    private String getProxyStr(Proxy proxy) {
-        if (proxy == null) {
-            return "";
-        }
-        return proxy.getIp() + ":" + proxy.getPort();
-    }
+	@Override
+	public String getCurrentThreadPoolName() {
+		if (this.currentPoolName == null){
+			this.currentPoolName = ThreadPoolUtil.getThreadPoolName(this.getClass());
+		}
+		return this.currentPoolName;
+	}
 
-    @Override
-    public void retry() throws InterruptedException {
-        if (getCurrentRetryTimes() < getMaxRetryTimes()) {
-            crawlerMessage.setCurrentRetryTimes(crawlerMessage.getCurrentRetryTimes() + 1);
-            createNewTask(crawlerMessage);
-        } else {
-            log.warn(this.getClass().getSimpleName() + "maxRetryTimes:{}, currentRetryTimes:{}", getMaxRetryTimes(), getCurrentRetryTimes());
-            receiveNewTask();
-        }
-        isRetry = true;
-    }
+	@Override
+	public ThreadPoolExecutor getCurrentThreadPool(){
+		return ThreadPoolUtil.getThreadPoolExecutorMap().get(getCurrentThreadPoolName());
+	}
 
-    protected abstract AbstractHttpClient getHttpClient();
+	private String getProxyStr(Proxy proxy){
+		if (proxy == null){
+			return "";
+		}
+		return proxy.getIp() + ":" + proxy.getPort();
+	}
 
-    protected abstract String getProxyQueueName();
+	@Override
+	public void retry() throws InterruptedException {
+		if (getCurrentRetryTimes() < getMaxRetryTimes()) {
+			crawlerMessage.setCurrentRetryTimes(crawlerMessage.getCurrentRetryTimes() + 1);
+			createNewTask(crawlerMessage);
+		} else {
+			log.warn(this.getClass().getSimpleName() + "maxRetryTimes:{}, currentRetryTimes:{}", getMaxRetryTimes(), getCurrentRetryTimes());
+			receiveNewTask();
+		}
+		isRetry = true;
+	}
 
-    protected abstract ProxyQueue getProxyQueue();
+	protected abstract AbstractHttpClient getHttpClient();
 
-    protected abstract TaskQueueService getTaskQueueService();
+	protected abstract String getProxyQueueName();
 
-    protected abstract LocalIPService getLocalIPService();
+	protected abstract ProxyQueue getProxyQueue();
 
-    protected boolean responseError(Page page) {
-        return false;
-    }
+	protected abstract TaskQueueService getTaskQueueService();
+
+	protected abstract LocalIPService getLocalIPService();
+
+	protected boolean responseError(Page page){
+		return false;
+	}
 
 }

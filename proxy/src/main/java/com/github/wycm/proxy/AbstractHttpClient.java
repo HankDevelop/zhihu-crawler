@@ -4,6 +4,7 @@ import com.github.wycm.common.*;
 import com.github.wycm.common.util.SimpleHttpClient;
 import com.github.wycm.proxy.util.ProxyUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.asynchttpclient.Response;
 import org.asynchttpclient.proxy.ProxyServer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,39 +26,36 @@ public abstract class AbstractHttpClient {
 
 
     public Page asyncGet(String url) throws ExecutionException, InterruptedException {
-        Response response = httpClient.getResponse(url, null);
-        return asyncGet(url, response);
-    }
-    public Page asyncGet(String url, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
-        if (userAgent == null){
-            return asyncGet(url);
-        }
-        Response response = httpClient.getResponse(url, null, userAgent, headers);
-        return asyncGet(url, response);
+        return asyncGet(url, null);
     }
 
     public Page asyncGet(String url, ProxyServer proxyServer) throws ExecutionException, InterruptedException {
-        Response response = httpClient.getResponse(url, proxyServer);
-        return asyncGet(url, response);
+        return asyncGet(url, proxyServer, null, null);
+    }
+
+    public Page asyncGet(String url, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+        return asyncGet(url, null, userAgent, headers);
     }
 
     public Page asyncGet(String url, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
-        if (userAgent == null){
-            return asyncGet(url, proxyServer);
-        }
-        Response response = httpClient.getResponse(url, proxyServer, userAgent, headers);
-        return asyncGet(url, response);
+        Response response = httpClient.execGetRequest(url, proxyServer, userAgent, headers);
+        return transformResponseToPage(url, response);
     }
 
-    public Page asyncPost(String url, Map<String, List<String>> paramMap, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
-        if (userAgent == null){
-            return asyncGet(url, proxyServer);
-        }
-        Response response = httpClient.getResponse(url, paramMap, proxyServer, userAgent, headers);
-        return asyncGet(url, response);
+    private Page asyncPost(String url, ProxyServer proxyServer) throws ExecutionException, InterruptedException{
+        return asyncPost(url, proxyServer, null, null);
     }
 
-    public Page asyncGet(String url, Response response) throws ExecutionException, InterruptedException {
+    public Page asyncPost(String url, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+        return asyncPost(url, null, proxyServer, userAgent, headers);
+    }
+
+    public Page asyncPost(String url, Map<String, List<String>> formParams, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+        Response response = httpClient.execPostRequest(url, formParams, proxyServer, userAgent, headers);
+        return transformResponseToPage(url, response);
+    }
+
+    public Page transformResponseToPage(String url, Response response) throws ExecutionException, InterruptedException {
         Page page = new Page();
         page.setStatusCode(response.getStatusCode());
         page.setHtml(response.getResponseBody());
@@ -65,7 +63,57 @@ public abstract class AbstractHttpClient {
         return page;
     }
 
-    public Page executeRequestWithRetry(CrawlerMessage crawlerMessage, Function<String, Boolean> ipBannedFunction) throws InterruptedException {
+    public Page executeGetWithRetry(CrawlerMessage crawlerMessage, Function<String, Boolean> ipBannedFunction) throws InterruptedException {
+        int currentRetryTimes = 0;
+        Proxy currentProxy = null;
+        while (currentRetryTimes < 3){
+            Page page = null;
+            try {
+                long requestStartTime = 0L;
+                currentProxy = proxyQueue.takeProxy(commonProperties.getTargetPageProxyQueueName());
+                requestStartTime = System.currentTimeMillis();
+
+                if(!(currentProxy.getIp().equals(getLocalIPService().getLocalIp()))){
+                    //代理
+                    page = this.asyncGet(crawlerMessage.getUrl(), new ProxyServer.Builder(currentProxy.getIp(), currentProxy.getPort()).build(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
+                } else {
+                    page = this.asyncGet(crawlerMessage.getUrl(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
+                }
+                long requestEndTime = System.currentTimeMillis();
+                page.setProxy(currentProxy);
+                int status = page.getStatusCode();
+
+                if(status == HttpStatus.SC_OK){
+                    if (ipBannedFunction.apply(page.getHtml())){
+                        log.warn("response error, url:{}, response:{}, discard ip:{}, port:{}", crawlerMessage.getUrl(), page.getHtml(), currentProxy.getIp(), currentProxy.getPort());
+                        throw new ExecutionException(new Throwable("response error"));
+                    }
+                    ProxyUtil.handleResponseSuccProxy(currentProxy);
+                    return page;
+                } else {
+                    log.error("{}, retryTimes:{},{}, url:{}, response Code:{}, cost time:{}ms"
+                            , Thread.currentThread().getName()
+                            , currentRetryTimes
+                            , currentProxy
+                            , page.getUrl()
+                            , status
+                            , requestEndTime - requestStartTime);
+                    ProxyUtil.handleResponseFailedProxy(currentProxy);
+                }
+            } catch (ExecutionException e) {
+                log.debug(e.getMessage(), e);
+                ProxyUtil.handleResponseFailedProxy(currentProxy);
+            } finally {
+                if (currentProxy != null && !ProxyUtil.isDiscardProxy(currentProxy)){
+                    proxyQueue.addProxy(commonProperties.getTargetPageProxyQueueName(), currentProxy);
+                }
+            }
+            currentRetryTimes = currentRetryTimes + 1;
+        }
+        return null;
+    }
+
+    public Page executePostWithRetry(CrawlerMessage crawlerMessage, Function<String, Boolean> ipBannedFunction) throws InterruptedException {
         int currentRetryTimes = 0;
         Proxy currentProxy = null;
         while (currentRetryTimes < 3){
@@ -75,17 +123,19 @@ public abstract class AbstractHttpClient {
                 currentProxy = proxyQueue.takeProxy(commonProperties.getTargetPageProxyQueueName());
                 requestStartTime = System.currentTimeMillis();
 
-                if(!(currentProxy.getIp().equals(LocalIPService.getLocalIp()))){
-                    //代理
-                    page = this.asyncPost(crawlerMessage.getUrl(), crawlerMessage.getMessageContext(), new ProxyServer.Builder(currentProxy.getIp(), currentProxy.getPort()).build(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
+                //page = execRequest(crawlerMessage, currentProxy);
+
+                if(!(currentProxy.getIp().equals(getLocalIPService().getLocalIp()))){
+                    //代理 TODO  form params
+                    page = this.asyncPost(crawlerMessage.getUrl(), null, new ProxyServer.Builder(currentProxy.getIp(), currentProxy.getPort()).build(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
                 } else {
-                    page = this.asyncGet(crawlerMessage.getUrl(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
+                    page = this.asyncPost(crawlerMessage.getUrl(), null, crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
                 }
                 long requestEndTime = System.currentTimeMillis();
                 page.setProxy(currentProxy);
                 int status = page.getStatusCode();
 
-                if(status == 200){
+                if(status == HttpStatus.SC_OK){
                     if (ipBannedFunction.apply(page.getHtml())){
                         log.warn("response error, url:{}, response:{}, discard ip:{}, port:{}", crawlerMessage.getUrl(), page.getHtml(), currentProxy.getIp(), currentProxy.getPort());
                         throw new ExecutionException(new Throwable("response error"));

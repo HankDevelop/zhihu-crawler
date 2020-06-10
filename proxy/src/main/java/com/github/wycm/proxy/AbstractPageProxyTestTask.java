@@ -2,7 +2,6 @@ package com.github.wycm.proxy;
 
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.Constants;
-import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.common.util.CrawlerUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
