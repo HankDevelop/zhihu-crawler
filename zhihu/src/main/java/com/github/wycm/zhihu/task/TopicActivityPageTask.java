@@ -36,7 +36,7 @@ public class TopicActivityPageTask extends AbstractPageTask {
     @Override
     public void run(){
         try {
-            Page page = getHttpClient().executeRequestWithRetry(new CrawlerMessage(url), (String s) -> false);
+            Page page = getHttpClient().executeGetWithRetry(new CrawlerMessage(url), (String s) -> false);
             if (page == null){
                 log.debug("executeRequestWithRetry failed, url:{}", url);
             } else {

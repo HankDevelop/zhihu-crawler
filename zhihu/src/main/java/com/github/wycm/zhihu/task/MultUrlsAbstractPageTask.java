@@ -16,7 +16,7 @@ public abstract class MultUrlsAbstractPageTask extends AbstractPageTask {
     @Override
     public void run(){
         try {
-            Page page = getHttpClient().executeRequestWithRetry(crawlerMessage, jsonPageBannedFunction());
+            Page page = getHttpClient().executeGetWithRetry(crawlerMessage, jsonPageBannedFunction());
             if (page == null){
                 log.error("executeRequestWithRetry failed, url:{}", url);
                 handleCrawlFailed();
