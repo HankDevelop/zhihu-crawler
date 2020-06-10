@@ -5,6 +5,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.asynchttpclient.*;
 import org.asynchttpclient.cookie.CookieStore;
 import org.asynchttpclient.cookie.ThreadSafeCookieStore;
@@ -15,10 +17,7 @@ import redis.clients.jedis.JedisPool;
 
 import javax.net.ssl.SSLException;
 import java.io.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
@@ -29,6 +28,7 @@ import java.util.function.Predicate;
  */
 @Slf4j
 public class SimpleHttpClient {
+    public static final String USER_AGENT = "user-agent";
     private AsyncHttpClient asyncHttpClient;
     /**
      * 限制同一网站并发请求数
@@ -42,18 +42,15 @@ public class SimpleHttpClient {
 
     private int timeout = 10000;
 
-    public SimpleHttpClient(){
-        this(null);
-    }
-
-    public SimpleHttpClient(JedisPool jedisPool){
+    public SimpleHttpClient(JedisPool jedisPool) {
         this(500, 2000, jedisPool);
     }
 
-    public SimpleHttpClient(int maxConnectionsPerHost, int maxConnections, JedisPool jedisPool){
+    public SimpleHttpClient(int maxConnectionsPerHost, int maxConnections, JedisPool jedisPool) {
         this(new ThreadSafeCookieStore(), maxConnectionsPerHost, maxConnections, jedisPool);
     }
-    public SimpleHttpClient(CookieStore cookieStore, int maxConnectionsPerHost, int maxConnections, JedisPool jedisPool){
+
+    public SimpleHttpClient(CookieStore cookieStore, int maxConnectionsPerHost, int maxConnections, JedisPool jedisPool) {
         SslContext sslCtx = null;
         try {
             sslCtx = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
@@ -73,82 +70,89 @@ public class SimpleHttpClient {
                 .setSslContext(sslCtx)
                 .setMaxRedirects(3)
                 .setFollowRedirect(true);
-        if (cookieStore != null){
+        if (cookieStore != null) {
             builder.setCookieStore(cookieStore);
         }
         asyncHttpClient = new DefaultAsyncHttpClient(builder.build());
         this.jedisPool = jedisPool;
     }
-    public String get(String url) throws ExecutionException, InterruptedException {
-        Request request = new RequestBuilder()
-                .setUrl(url)
-                .setHeader("user-agent", Constants.userAgentArray[new Random().nextInt(Constants.userAgentArray.length)])
-                .build();
-        return execute(request);
+
+    public String getBodyStr(String url) throws ExecutionException, InterruptedException {
+        return getBodyStr(url, null);
     }
 
-    public String get(String url, ProxyServer proxyServer) throws ExecutionException, InterruptedException {
-        Request request = new RequestBuilder()
-                .setUrl(url)
-                .setProxyServer(proxyServer)
-                .setHeader("user-agent", Constants.userAgentArray[new Random().nextInt(Constants.userAgentArray.length)])
-                .build();
-        return execute(request);
+    public String getBodyStr(String url, ProxyServer proxyServer) throws ExecutionException, InterruptedException {
+        return execGetRequest(url, proxyServer).getResponseBody();
     }
 
-    public String execute(Request request) throws ExecutionException, InterruptedException {
-        return executeRequest(request).getResponseBody();
+    public Response execGetRequest(String url, ProxyServer proxyServer) throws ExecutionException, InterruptedException {
+        return execGetRequest(url, proxyServer, null);
     }
 
-    public Response getResponse(String url, ProxyServer proxyServer) throws ExecutionException, InterruptedException {
-//        proxyServer = new ProxyServer.Builder("127.0.0.1", 8888).build();
-        Request request = new RequestBuilder()
-                .setUrl(url)
-                .setProxyServer(proxyServer)
-                .setHeader("user-agent", Constants.userAgentArray[new Random().nextInt(Constants.userAgentArray.length)])
-                .build();
-        return executeRequest(request);
+    public Response execGetRequest(String url, ProxyServer proxyServer, String userAgent) throws ExecutionException, InterruptedException {
+        return execGetRequest(url, proxyServer, userAgent, null);
     }
-    public Response getResponse(String url, ProxyServer proxyServer, String userAgent) throws ExecutionException, InterruptedException {
-//        proxyServer = new ProxyServer.Builder("127.0.0.1", 8888).build();
-        RequestBuilder builder = new RequestBuilder();
-        builder.resetCookies();
-        Request request = builder
-                .setUrl(url)
-                .setProxyServer(proxyServer)
-                .setHeader("user-agent", userAgent)
-                .build();
-        return executeRequest(request);
-    }
-    public Response getResponse(String url, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
-//        proxyServer = new ProxyServer.Builder("127.0.0.1", 8888).build();
-        RequestBuilder builder = new RequestBuilder();
-        builder.resetCookies();
-        builder.setUrl(url)
-                .setProxyServer(proxyServer)
-                .setHeader("user-agent", userAgent);
-        headers.forEach(builder::setHeader);
+
+    public Response execGetRequest(String url, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+        RequestBuilder builder = initGetRequestBuilder(url);
+        initRequestInfo(null, proxyServer, userAgent, headers, builder);
         return executeRequest(builder.build());
     }
 
-    public Response getResponse(String url, Map<String, List<String>> paramMap, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
-//        proxyServer = new ProxyServer.Builder("127.0.0.1", 8888).build();
-        RequestBuilder builder = new RequestBuilder();
-        builder.resetCookies();
-        builder.setUrl(url)
-                .setMethod(HttpConstants.Methods.POST)
-                .setProxyServer(proxyServer)
-                .setHeader("user-agent", userAgent)
-                .setFormParams(paramMap);
-        headers.forEach(builder::setHeader);
+    public Response execPostRequest(String url, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+        return execPostRequest(url, null, proxyServer, userAgent, headers);
+    }
+
+    public Response execPostRequest(String url, Map<String, List<String>> formParams, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+        RequestBuilder builder = initPostRequestBuilder(url);
+        initRequestInfo(formParams, proxyServer, userAgent, headers, builder);
         return executeRequest(builder.build());
     }
 
+    private void initRequestInfo(Map<String, List<String>> formParams, ProxyServer proxyServer, String userAgent, Map<String, String> headers, RequestBuilder builder) {
+        if (Objects.nonNull(proxyServer)) {
+            builder.setProxyServer(proxyServer);
+        }
+        if (StringUtils.isBlank(userAgent)) {
+            builder.setHeader(USER_AGENT, Constants.userAgentArray[new Random().nextInt(Constants.userAgentArray.length)]);
+        } else {
+            builder.setHeader(USER_AGENT, userAgent);
+        }
+        if (Objects.nonNull(headers) && !headers.isEmpty()) {
+            headers.forEach(builder::setHeader);
+        }
+        if (Objects.nonNull(formParams) && !formParams.isEmpty()) {
+            builder.setFormParams(formParams);
+        }
+    }
+
+    private RequestBuilder initGetRequestBuilder(String url) {
+        RequestBuilder builder = new RequestBuilder();
+        builder.resetCookies();
+        builder.setUrl(url);
+        return builder;
+    }
+
+    private RequestBuilder initPostRequestBuilder(String url) {
+        RequestBuilder builder = new RequestBuilder();
+        builder.resetCookies();
+        builder.setUrl(url).setMethod(HttpConstants.Methods.POST);
+        return builder;
+    }
+
+    /**
+     * 调用asyncHttpClient执行请求，如果域名中不包含zhihu、baidu则添加信息量控制并发
+     *
+     * @param request
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     public Response executeRequest(Request request) throws InterruptedException, ExecutionException {
         Response res = null;
 
         String domain = PatternUtil.group(request.getUrl(), "//.*?([^\\.]+)\\.(com|net|org|info|coop|int|co\\.uk|org\\.uk|ac\\.uk|uk|cn)", 1);
-        if (domain.contains("zhihu") || domain.contains("baidu")){
+        if (domain.contains("zhihu") || domain.contains("baidu")) {
             res = asyncHttpClient.executeRequest(request).get();
             return res;
         }
@@ -164,46 +168,48 @@ public class SimpleHttpClient {
 
     /**
      * 下载图片
-     * @param fileURL 文件地址
-     * @param path 保存路径
-     * @param saveFileName 文件名，包括后缀名
+     * @param fileURL       文件地址
+     * @param path          保存路径
+     * @param saveFileName  文件名，包括后缀名
      * @param isReplaceFile 若存在文件时，是否还需要下载文件
      */
     public void downloadFile(String fileURL,
-                                    String path,
-                                    String saveFileName,
-                                    Boolean isReplaceFile){
+                             String path,
+                             String saveFileName,
+                             Boolean isReplaceFile) {
         Request request = new RequestBuilder()
                 .setUrl(fileURL)
-                .setHeader("user-agent", Constants.userAgentArray[new Random().nextInt(Constants.userAgentArray.length)])
+                .setHeader(USER_AGENT, Constants.userAgentArray[new Random().nextInt(Constants.userAgentArray.length)])
                 .build();
         downloadFile(request, path, saveFileName, isReplaceFile);
     }
 
     public void downloadFile(Request request,
-                                    String path,
-                                    String saveFileName,
-                                    Boolean isReplaceFile){
-        try{
+                             String path,
+                             String saveFileName,
+                             Boolean isReplaceFile) {
+        try {
             Response response = executeRequest(request);
             log.debug("status:" + response.getStatusCode());
-            File file =new File(path);
+            File file = new File(path);
             //如果文件夹不存在则创建
-            if  (!file .exists()  && !file .isDirectory()){
+            if (!file.exists() && !file.isDirectory()) {
                 file.mkdirs();
-            } else{
+            } else {
                 log.debug("//目录存在");
             }
             file = new File(path + "/" + saveFileName);
-            if(!file.exists() || isReplaceFile){
+            if (!file.exists() || isReplaceFile) {
                 //如果文件不存在，则下载
+                OutputStream os = null;
+                InputStream is = null;
                 try {
-                    OutputStream os = new FileOutputStream(file);
-                    InputStream is = response.getResponseBodyAsStream();
+                    os = new FileOutputStream(file);
+                    is = response.getResponseBodyAsStream();
                     byte[] buff = new byte[(int) response.getResponseBodyAsBytes().length];
-                    while(true) {
+                    while (true) {
                         int readed = is.read(buff);
-                        if(readed == -1) {
+                        if (readed == -1) {
                             break;
                         }
                         byte[] temp = new byte[readed];
@@ -211,24 +217,24 @@ public class SimpleHttpClient {
                         os.write(temp);
                         log.debug("文件下载中....");
                     }
-                    is.close();
-                    os.close();
                     log.info(request.getUrl() + "--文件成功下载至" + path + "/" + saveFileName);
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    IOUtils.closeQuietly(is);
+                    IOUtils.closeQuietly(os);
                 }
-            }
-            else{
+            } else {
                 log.debug("该文件存在！");
             }
-        } catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             log.info("连接超时...");
-        } catch(Exception e1){
+        } catch (Exception e1) {
             e1.printStackTrace();
         }
     }
 
-    public static class IgnoreCookieStore implements CookieStore{
+    public static class IgnoreCookieStore implements CookieStore {
         List<Cookie> empty = Collections.emptyList();
 
         @Override
