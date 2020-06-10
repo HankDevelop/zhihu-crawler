@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
+
 
 @Slf4j
 @Service
@@ -27,7 +29,7 @@ public class ProxyPageDownloadTaskReceiver extends BaseReceiver{
             log.info("test env...");
             return;
         }
-        new Thread(() -> {
+        newSingleThreadExecutor().submit(() -> {
             log.info("start receive ProxyPageDownloadTask message");
             int corePoolSize = ThreadPoolUtil
                     .getThreadPool(TohokuProxyPageDownloadTask.class).getCorePoolSize();
@@ -43,7 +45,7 @@ public class ProxyPageDownloadTaskReceiver extends BaseReceiver{
                         .getThreadPool(TohokuProxyPageDownloadTask.class)
                         .execute(new TohokuProxyPageDownloadTask(message, false, tohokuComponent));
             }
-        }).start();
+        });
     }
 
     @Override

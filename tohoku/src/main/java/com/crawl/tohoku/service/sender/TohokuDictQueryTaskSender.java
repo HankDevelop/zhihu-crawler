@@ -8,6 +8,8 @@ import com.github.wycm.common.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -16,14 +18,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
-@Service
 @Slf4j
-public class TohokuDictQueryTaskSender extends BaseSender {
-    public final static int USER_TASK_DELAY = 1000 * 60 * 10;
+@Service
+public class TohokuDictQueryTaskSender extends BaseSender implements ApplicationListener<ContextRefreshedEvent> {
     @Autowired
     private TaskQueueService taskQueueService;
-    @Autowired
-    private ResultFileWriteTask fileWriteTask;
+    /*@Autowired
+    private ResultFileWriteTask fileWriteTask;*/
 
     private Map<String, Integer> keyMaps = new HashMap<>();
 
@@ -85,10 +86,8 @@ public class TohokuDictQueryTaskSender extends BaseSender {
         keyMaps.put("@", 257);
     }
 
-
-    //每天01:01:10时执行，抓取
     @Override
-    @Scheduled(initialDelay = 5000, fixedDelay = USER_TASK_DELAY)
+    @Scheduled(initialDelay = 5000, fixedDelay = 1000 * 60 * 60)
     public void send() {
         log.info("start send query dict message");
         newSingleThreadExecutor().submit(() -> {
@@ -142,7 +141,13 @@ public class TohokuDictQueryTaskSender extends BaseSender {
 //            taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(TohokuDictQueryTask.class), new CrawlerMessage(startUrl, paramMap), 100000);
 //            log.info("end send ZhihuUser message, sendSize:{}", sendSize.get());
         });
+    }
 
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        if (contextRefreshedEvent.getApplicationContext().getParent() == null) {//保证只执行一次
+//            send();
+        }
     }
 
 

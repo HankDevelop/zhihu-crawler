@@ -27,25 +27,27 @@ public class ProxyPageProxyPool {
     @PostConstruct
     public void init() {
         int pages = 16;
-        for(int i = 1; i <= pages; i++){
+        for (int i = 1; i <= pages; i++) {
             proxyMap.put("http://www.xicidaili.com/wt/" + i + ".html", XicidailiProxyListPageParser.class);
             proxyMap.put("http://www.xicidaili.com/nn/" + i + ".html", XicidailiProxyListPageParser.class);
             proxyMap.put("http://www.xicidaili.com/wn/" + i + ".html", XicidailiProxyListPageParser.class);
             proxyMap.put("http://www.xicidaili.com/nt/" + i + ".html", XicidailiProxyListPageParser.class);
             proxyMap.put("https://www.kuaidaili.com/free/inha/" + i + "/", KuaiProxyListPageParser.class);
-            proxyMap.put("http://www.mimiip.com/gngao/" + i, MimiipProxyListPageParser.class);//高匿
-            proxyMap.put("http://www.mimiip.com/gnpu/" + i, MimiipProxyListPageParser.class);//普匿
+            //高匿
+//            proxyMap.put("http://www.mimiip.com/gngao/" + i, MimiipProxyListPageParser.class);
+            //普匿
+//            proxyMap.put("http://www.mimiip.com/gnpu/" + i, MimiipProxyListPageParser.class);
             proxyMap.put("http://www.66ip.cn/" + i + ".html", Ip66ProxyListPageParser.class);
-//            for(int j = 1; j < 34; j++){
-//                proxyMap.put("http://www.66ip.cn/areaindex_" + j + "/" + i + ".html", Ip66ProxyListPageParser.class);
-//            }
+            /*for(int j = 1; j < 34; j++){
+                proxyMap.put("http://www.66ip.cn/areaindex_" + j + "/" + i + ".html", Ip66ProxyListPageParser.class);
+            }*/
             proxyMap.put("http://www.89ip.cn/index_" + i + ".html", Ip89ProxyListPageParser.class);
             proxyMap.put("http://www.qydaili.com/free/?action=china&page=" + i, QydailiProxyListPageParser.class);
         }
-//        ThreadPoolUtil.createThreadPool(ThreadPoolUtil.getParserPoolName(XicidailiProxyListPageParser.class), MAX_REQS, MAX_REQS);
-//        ThreadPoolUtil.createThreadPool(ThreadPoolUtil.getParserPoolName(KuaiProxyListPageParser.class), MAX_REQS, MAX_REQS);
-//        ThreadPoolUtil.createThreadPool(ThreadPoolUtil.getParserPoolName(MimiipProxyListPageParser.class), MAX_REQS, MAX_REQS);
-//        ThreadPoolUtil.createThreadPool(ThreadPoolUtil.getParserPoolName(Ip66ProxyListPageParser.class), MAX_REQS, MAX_REQS);
+        /*ThreadPoolUtil.createThreadPool(ThreadPoolUtil.getParserPoolName(XicidailiProxyListPageParser.class), MAX_REQS, MAX_REQS);
+        ThreadPoolUtil.createThreadPool(ThreadPoolUtil.getParserPoolName(KuaiProxyListPageParser.class), MAX_REQS, MAX_REQS);
+        ThreadPoolUtil.createThreadPool(ThreadPoolUtil.getParserPoolName(MimiipProxyListPageParser.class), MAX_REQS, MAX_REQS);
+        ThreadPoolUtil.createThreadPool(ThreadPoolUtil.getParserPoolName(Ip66ProxyListPageParser.class), MAX_REQS, MAX_REQS);*/
 
         proxyMap.putIfAbsent("http://cn-proxy.com/", CnProxyListPageParser.class);
     }

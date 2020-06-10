@@ -42,12 +42,8 @@ public abstract class AbstractHttpClient {
         return transformResponseToPage(url, response);
     }
 
-    private Page asyncPost(String url, ProxyServer proxyServer) throws ExecutionException, InterruptedException{
-        return asyncPost(url, proxyServer, null, null);
-    }
-
-    public Page asyncPost(String url, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
-        return asyncPost(url, null, proxyServer, userAgent, headers);
+    public Page asyncPost(String url, Map<String, List<String>> formParams, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
+        return asyncPost(url, formParams, null, userAgent, headers);
     }
 
     public Page asyncPost(String url, Map<String, List<String>> formParams, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {

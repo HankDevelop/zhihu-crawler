@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
-@Service
 @Slf4j
+@Service
 @NoArgsConstructor
 public class TohokuDictQueryTaskReceiver extends BaseReceiver{
 

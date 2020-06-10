@@ -8,6 +8,7 @@ import com.github.wycm.common.*;
 import com.github.wycm.common.parser.ListPageParser;
 import com.github.wycm.common.util.Constants;
 import com.github.wycm.common.util.CrawlerUtils;
+import com.github.wycm.common.util.SpringUtil;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.proxy.AbstractHttpClient;
 import com.github.wycm.proxy.AbstractPageTask;
@@ -29,8 +30,8 @@ import static com.crawl.tohoku.TohokuHttpClient.*;
 public class TohokuDictQueryTask extends AbstractPageTask {
 
     private static Logger logger = LoggerFactory.getLogger(TohokuDictQueryTask.class);
-    @Resource(name = "dictContentDetailParser")
-    private ListPageParser listPageParser;
+    /*@Resource(name = "dictContentDetailParser")
+    private ListPageParser listPageParser;*/
     private String queryParams;
     private TohokuComponent tohokuComponent;
 
@@ -86,7 +87,7 @@ public class TohokuDictQueryTask extends AbstractPageTask {
 
     @Override
     protected void handle(Page page) {
-        List<TransWordInfo> dictItems = listPageParser.parseListPage(page);
+        List<TransWordInfo> dictItems = SpringUtil.getBean("dictContentDetailParser", ListPageParser.class).parseListPage(page);
         if (null == dictItems || dictItems.isEmpty()) {
             parseWordNotFountCount.getAndIncrement();
             logger.warn("转换字{}查询解析结果为空", this.queryParams);

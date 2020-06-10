@@ -22,17 +22,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @MapperScan("com.crawl.tohoku.dao")
 public class TohokuCrawlerApplication {
 	public static void main(String[] args) {
-		initThreadPool();
 		SpringApplication.run(TohokuCrawlerApplication.class, args);
 	}
 
-	public static void initThreadPool(){
-		ThreadPoolUtil.createThreadPool(TohokuDictQueryTask.class, SystemUtil.getRecommendThreadSize());
-		ThreadPoolUtil.createThreadPool(DownloadSourceImageTask.class, SystemUtil.getRecommendThreadSize() / 2);
-		ThreadPoolUtil.createThreadPool(TohokuProxyPageProxyTestTask.class, SystemUtil.getRecommendThreadSize() / 2);
-		ThreadPoolUtil.createThreadPool(TohokuPageProxyTestTask.class, SystemUtil.getRecommendThreadSize() / 2);
-		ThreadPoolUtil.createThreadPool(TohokuProxyPageDownloadTask.class, SystemUtil.getRecommendThreadSize() / 4);
 
-	}
 }
 

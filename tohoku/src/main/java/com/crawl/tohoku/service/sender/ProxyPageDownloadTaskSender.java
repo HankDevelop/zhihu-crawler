@@ -22,16 +22,14 @@ public class ProxyPageDownloadTaskSender extends BaseSender{
     TaskQueueService taskQueueService;
 
     private static final int initQueueSize = 50;
-    @Autowired
-    private ProxyPageProxyPool proxyPageProxyPool;
 
     @Override
     @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 60 * 60)
     public void send() {
-        log.info("start send ProxyPageDownloadTask message");
+        log.debug("start send ProxyPageDownloadTask message");
 
         if (taskQueueService.queueSize(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class)) > initQueueSize){
-            log.info(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class) + "size more than " + initQueueSize + ", not send task");
+            log.debug(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class) + "size more than " + initQueueSize + ", not send task");
             return;
         }
         newSingleThreadExecutor().submit(() -> {
@@ -41,8 +39,8 @@ public class ProxyPageDownloadTaskSender extends BaseSender{
                         , requestId
                         , 1000 * 60 * 50)){
                     CrawlerMessage crawlerMessage = new CrawlerMessage(url);
-                    taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class), crawlerMessage, 100000);
-                    log.info("ProxyPageDownloadTask message send success:{}", JSON.toJSONString(crawlerMessage));
+                    taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class), crawlerMessage, initQueueSize);
+                    log.debug("ProxyPageDownloadTask message send success:{}", JSON.toJSONString(crawlerMessage));
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
@@ -52,7 +50,7 @@ public class ProxyPageDownloadTaskSender extends BaseSender{
                     log.warn("get lock failed : {}", CrawlerUtils.getLockKeyPrefix(TohokuProxyPageDownloadTask.class) + url);
                 }
             });
-            log.info("end send ProxyPageDownloadTask message");
+            log.debug("end send ProxyPageDownloadTask message");
         });
 
     }

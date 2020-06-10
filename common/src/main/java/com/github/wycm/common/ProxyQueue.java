@@ -74,7 +74,7 @@ public class ProxyQueue {
             if (!jedis.sismember(queueSetName, proxy.getProxyStr())){
                 jedis.sadd(queueSetName, proxy.getProxyStr());
             } else {
-                log.info("proxy exist, {}", proxy.getProxyStr());
+                log.info("proxy in queue {} exist, {}", queueSetName, proxy.getProxyStr());
                 return;
             }
             proxy.setLastUseTime(getRedisServerTime(jedis));
