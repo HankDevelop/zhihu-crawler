@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.util.List;
 
@@ -28,7 +29,8 @@ import static com.crawl.tohoku.TohokuHttpClient.*;
 public class TohokuDictQueryTask extends AbstractPageTask {
 
     private static Logger logger = LoggerFactory.getLogger(TohokuDictQueryTask.class);
-    private ListPageParser listPageParser = DictContentDetailParser.getInstance();
+    @Resource(name = "dictContentDetailParser")
+    private ListPageParser listPageParser;
     private String queryParams;
     private TohokuComponent tohokuComponent;
 

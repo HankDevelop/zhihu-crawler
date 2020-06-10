@@ -15,7 +15,7 @@ public class XicidailiProxyListPageParserTest {
 
     @Test
     public void parse() throws ExecutionException, InterruptedException {
-        SimpleHttpClient simpleHttpClient = new SimpleHttpClient(null);
+        SimpleHttpClient simpleHttpClient = new SimpleHttpClient();
         String r = simpleHttpClient.getBodyStr("http://www.xicidaili.com/wt/1.html");
         XicidailiProxyListPageParser pageParser = new XicidailiProxyListPageParser();
         List<Proxy> proxyList =pageParser.parse(r);

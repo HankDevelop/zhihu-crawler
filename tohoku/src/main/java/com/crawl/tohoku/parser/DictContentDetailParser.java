@@ -20,7 +20,7 @@ import java.util.List;
 @Component("dictContentDetailParser")
 public class DictContentDetailParser implements ListPageParser<TransWordInfo> {
 
-    private static DictContentDetailParser instance;
+    /*private static DictContentDetailParser instance;
 
     public static DictContentDetailParser getInstance() {
         if (instance == null) {
@@ -34,7 +34,7 @@ public class DictContentDetailParser implements ListPageParser<TransWordInfo> {
     }
 
     private DictContentDetailParser() {
-    }
+    }*/
 
     @Override
     public List<TransWordInfo> parseListPage(Page page) {

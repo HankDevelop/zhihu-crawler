@@ -15,7 +15,7 @@ public class QydailiProxyListPageParserTest {
 
     @Test
     public void parse() throws ExecutionException, InterruptedException {
-        SimpleHttpClient simpleHttpClient = new SimpleHttpClient(null);
+        SimpleHttpClient simpleHttpClient = new SimpleHttpClient();
         String r = simpleHttpClient.getBodyStr("http://www.qydaili.com/free/?action=china&page=1");
         QydailiProxyListPageParser pageParser = new QydailiProxyListPageParser();
         List<Proxy> proxyList =pageParser.parse(r);

@@ -38,19 +38,17 @@ public class SimpleHttpClient {
 
     private final static int MAX_CONCURRENT_COUNT = 3;
 
-    protected JedisPool jedisPool = null;
-
     private int timeout = 10000;
 
-    public SimpleHttpClient(JedisPool jedisPool) {
-        this(500, 2000, jedisPool);
+    public SimpleHttpClient() {
+        this(500, 2000);
     }
 
-    public SimpleHttpClient(int maxConnectionsPerHost, int maxConnections, JedisPool jedisPool) {
-        this(new ThreadSafeCookieStore(), maxConnectionsPerHost, maxConnections, jedisPool);
+    public SimpleHttpClient(int maxConnectionsPerHost, int maxConnections) {
+        this(new ThreadSafeCookieStore(), maxConnectionsPerHost, maxConnections);
     }
 
-    public SimpleHttpClient(CookieStore cookieStore, int maxConnectionsPerHost, int maxConnections, JedisPool jedisPool) {
+    public SimpleHttpClient(CookieStore cookieStore, int maxConnectionsPerHost, int maxConnections) {
         SslContext sslCtx = null;
         try {
             sslCtx = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
@@ -74,7 +72,6 @@ public class SimpleHttpClient {
             builder.setCookieStore(cookieStore);
         }
         asyncHttpClient = new DefaultAsyncHttpClient(builder.build());
-        this.jedisPool = jedisPool;
     }
 
     public String getBodyStr(String url) throws ExecutionException, InterruptedException {

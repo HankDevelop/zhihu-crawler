@@ -25,9 +25,9 @@ public class TohokuHttpClient extends AbstractHttpClient {
     @Autowired
     private LocalIPService localIPService;
 
-    public TohokuHttpClient(JedisPool jedisPool){
+    public TohokuHttpClient(){
         super();
-        super.httpClient = new SimpleHttpClient(new SimpleHttpClient.IgnoreCookieStore(), 500, 2000, jedisPool);
+        super.httpClient = new SimpleHttpClient(new SimpleHttpClient.IgnoreCookieStore(), 500, 2000);
     }
 
     @Override

@@ -36,7 +36,7 @@ public class LocalIPService {
     @PostConstruct
     public void initIp(){
         try {
-            String s = new SimpleHttpClient(jedisPool).getBodyStr("http://www.httpbin.org/ip");
+            String s = new SimpleHttpClient().getBodyStr("http://www.httpbin.org/ip");
             localIp = JSONObject.parseObject(s).getString("origin");
             Proxy proxy = new Proxy(localIp, DIRECT_CONNECT_PORT, Constants.TIME_INTERVAL);
             proxy.setLastUseTime(proxyQueue.getRedisServerTime());

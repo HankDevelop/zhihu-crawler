@@ -1,7 +1,6 @@
 package com.crawl.tohoku.support;
 
 import com.crawl.tohoku.TohokuConstants;
-import com.crawl.tohoku.entity.DictItem;
 import com.crawl.tohoku.entity.TransWordInfo;
 import com.crawl.tohoku.service.TohokuComponent;
 import com.github.wycm.common.util.ThreadPoolMonitor;

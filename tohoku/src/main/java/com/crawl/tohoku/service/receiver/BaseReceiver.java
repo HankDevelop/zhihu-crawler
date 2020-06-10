@@ -19,15 +19,6 @@ public abstract class BaseReceiver<T extends AbstractPageTask> {
     @Autowired
     protected TohokuComponent tohokuComponent;
 
-    static {
-        ThreadPoolUtil.createThreadPool(TohokuDictQueryTask.class, SystemUtil.getRecommendThreadSize());
-        ThreadPoolUtil.createThreadPool(DownloadSourceImageTask.class, SystemUtil.getRecommendThreadSize() / 2);
-        ThreadPoolUtil.createThreadPool(TohokuProxyPageProxyTestTask.class, SystemUtil.getRecommendThreadSize() / 2);
-        ThreadPoolUtil.createThreadPool(TohokuPageProxyTestTask.class, SystemUtil.getRecommendThreadSize() / 2);
-        ThreadPoolUtil.createThreadPool(TohokuProxyPageDownloadTask.class, SystemUtil.getRecommendThreadSize() / 4);
-    }
-
-
     protected abstract void receive();
 
     protected void receive(Class<T> tClass){

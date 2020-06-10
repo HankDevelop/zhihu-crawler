@@ -15,7 +15,7 @@ public class KuaiProxyListPageParserTest {
 
     @Test
     public void parse() throws ExecutionException, InterruptedException {
-        SimpleHttpClient simpleHttpClient = new SimpleHttpClient(null);
+        SimpleHttpClient simpleHttpClient = new SimpleHttpClient();
         String r = simpleHttpClient.getBodyStr("https://www.kuaidaili.com/free/");
         KuaiProxyListPageParser pageParser = new KuaiProxyListPageParser();
         List<Proxy> proxyList =pageParser.parse(r);
