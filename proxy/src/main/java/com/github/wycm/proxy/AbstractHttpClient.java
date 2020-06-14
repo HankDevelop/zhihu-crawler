@@ -69,7 +69,7 @@ public abstract class AbstractHttpClient {
                 currentProxy = proxyQueue.takeProxy(commonProperties.getTargetPageProxyQueueName());
                 requestStartTime = System.currentTimeMillis();
 
-                if(!(currentProxy.getIp().equals(getLocalIPService().getLocalIp()))){
+                if(!(currentProxy.getIp().equals(LocalIPService.getLocalIp()))){
                     //代理
                     page = this.asyncGet(crawlerMessage.getUrl(), new ProxyServer.Builder(currentProxy.getIp(), currentProxy.getPort()).build(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
                 } else {
@@ -121,7 +121,7 @@ public abstract class AbstractHttpClient {
 
                 //page = execRequest(crawlerMessage, currentProxy);
 
-                if(!(currentProxy.getIp().equals(getLocalIPService().getLocalIp()))){
+                if(!(currentProxy.getIp().equals(LocalIPService.getLocalIp()))){
                     //代理 TODO  form params
                     page = this.asyncPost(crawlerMessage.getUrl(), null, new ProxyServer.Builder(currentProxy.getIp(), currentProxy.getPort()).build(), crawlerMessage.getUserAgent(), crawlerMessage.getHeaders());
                 } else {

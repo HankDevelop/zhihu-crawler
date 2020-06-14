@@ -1,7 +1,10 @@
 package com.crawl.tohoku.service;
 
 import com.crawl.tohoku.TohokuHttpClient;
-import com.crawl.tohoku.parser.DictContentDetailParser;
+import com.crawl.tohoku.dao.TransWordInfoDao;
+import com.crawl.tohoku.parser.DictContentListParser;
+import com.crawl.tohoku.parser.Kdic33DictListParser;
+import com.crawl.tohoku.parser.Manchu11DictListParser;
 import com.crawl.tohoku.task.*;
 import com.github.wycm.common.CommonProperties;
 import com.github.wycm.common.LocalIPService;
@@ -45,7 +48,13 @@ public class TohokuComponent {
     private ProxyPageProxyPool proxyPageProxyPool;
 
     @Autowired
-    private DictContentDetailParser dictContentDetailParser;
+    private Manchu11DictListParser manchu11DictListParser;
+
+    @Autowired
+    private Kdic33DictListParser kdic33DictListParser;
+
+    @Autowired
+    private TransWordInfoDao transWordInfoDao;
 
     @Autowired
     private LocalIPService localIPService;
@@ -54,13 +63,12 @@ public class TohokuComponent {
     private CommonProperties commonProperties;
 
     @PostConstruct
-    public static void initThreadPool(){
-        ThreadPoolUtil.createThreadPool(TohokuDictQueryTask.class, SystemUtil.getRecommendThreadSize());
+    public static void initThreadPool() {
+        ThreadPoolUtil.createThreadPool(Kdic33DictQueryTask.class, SystemUtil.getRecommendThreadSize());
         ThreadPoolUtil.createThreadPool(DownloadSourceImageTask.class, SystemUtil.getRecommendThreadSize() / 2);
         ThreadPoolUtil.createThreadPool(TohokuProxyPageProxyTestTask.class, SystemUtil.getRecommendThreadSize() / 2);
         ThreadPoolUtil.createThreadPool(TohokuPageProxyTestTask.class, SystemUtil.getRecommendThreadSize() / 2);
         ThreadPoolUtil.createThreadPool(TohokuProxyPageDownloadTask.class, SystemUtil.getRecommendThreadSize() / 4);
-
     }
 
 }

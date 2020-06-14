@@ -5,7 +5,7 @@ import com.crawl.tohoku.service.TohokuComponent;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.SimpleHttpClient;
 import com.github.wycm.proxy.AbstractHttpClient;
-import com.github.wycm.proxy.AbstractPageTask;
+import com.crawl.tohoku.support.AbstractPageTask;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;

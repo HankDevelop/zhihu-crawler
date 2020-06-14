@@ -1,13 +1,11 @@
 package com.crawl.tohoku.service.receiver;
 
 import com.crawl.tohoku.service.TohokuComponent;
-import com.crawl.tohoku.task.*;
 import com.github.wycm.common.CrawlerMessage;
 import com.github.wycm.common.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
-import com.github.wycm.common.util.SystemUtil;
 import com.github.wycm.common.util.ThreadPoolUtil;
-import com.github.wycm.proxy.AbstractPageTask;
+import com.crawl.tohoku.support.AbstractPageTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,8 +35,7 @@ public abstract class BaseReceiver<T extends AbstractPageTask> {
                 log.error(e.getMessage(), e);
                 return;
             }
-            ThreadPoolUtil.getThreadPool(tClass)
-                    .execute(createNewTask(message));
+            ThreadPoolUtil.getThreadPool(tClass).execute(createNewTask(message));
             log.info("create {} task success", tClass);
         }
     }

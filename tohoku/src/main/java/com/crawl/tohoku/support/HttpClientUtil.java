@@ -1,77 +1,64 @@
-package com.github.wycm.common.util;
+package com.crawl.tohoku.support;
 
+import com.github.wycm.common.util.Constants;
+import com.github.wycm.common.util.PatternUtil;
 import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.asynchttpclient.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.asynchttpclient.Request;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
 import org.asynchttpclient.cookie.CookieStore;
-import org.asynchttpclient.cookie.ThreadSafeCookieStore;
 import org.asynchttpclient.proxy.ProxyServer;
 import org.asynchttpclient.uri.Uri;
 import org.asynchttpclient.util.HttpConstants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-import javax.net.ssl.SSLException;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.function.Predicate;
 
-/**
- * Created by wycm on 2018/10/28.
- */
 @Slf4j
-public class SimpleHttpClient {
+@Component
+public class HttpClientUtil {
     public static final String USER_AGENT = "user-agent";
-    private AsyncHttpClient asyncHttpClient;
     /**
      * 限制同一网站并发请求数
      * k:domain
      */
     public final static Map<String, Semaphore> semaphoreMap = new ConcurrentHashMap<>();
-
     private final static int MAX_CONCURRENT_COUNT = 3;
 
-    private int timeout = 60000;
+    @Autowired
+    private CloseableHttpAsyncClient httpAsyncClient;
+    @Autowired
+    private HttpAsyncClientBuilder httpAsyncClientBuilder;
 
-    public SimpleHttpClient() {
-        this(500, 2000);
-    }
-
-    public SimpleHttpClient(int maxConnectionsPerHost, int maxConnections) {
-        this(new ThreadSafeCookieStore(), maxConnectionsPerHost, maxConnections);
-    }
-
-    public SimpleHttpClient(CookieStore cookieStore, int maxConnectionsPerHost, int maxConnections) {
-        SslContext sslCtx = null;
-        try {
-            sslCtx = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
-        } catch (SSLException e) {
-            e.printStackTrace();
-        }
-        DefaultAsyncHttpClientConfig.Builder builder = Dsl.config()
-                .setConnectTimeout(timeout)
-                .setHandshakeTimeout(timeout)
-                .setReadTimeout(timeout)
-                .setRequestTimeout(timeout)
-                .setShutdownTimeout(timeout)
-                .setSslSessionTimeout(timeout)
-                .setPooledConnectionIdleTimeout(timeout)
-                .setMaxConnectionsPerHost(maxConnectionsPerHost)
-                .setMaxConnections(maxConnections)
-                .setSslContext(sslCtx)
-                .setMaxRedirects(3)
-                .setFollowRedirect(true);
-        if (cookieStore != null) {
-            builder.setCookieStore(cookieStore);
-        }
-        asyncHttpClient = new DefaultAsyncHttpClient(builder.build());
-    }
+    @Autowired
+    private RequestConfig requestConfig;
 
     public String getBodyStr(String url) throws ExecutionException, InterruptedException {
         return getBodyStr(url, null);
@@ -97,7 +84,29 @@ public class SimpleHttpClient {
 
     public Response execPostRequest(String url, Map<String, List<String>> formParams, ProxyServer proxyServer, String userAgent, Map<String, String> headers) throws ExecutionException, InterruptedException {
         RequestBuilder builder = initPostRequestBuilder(url);
-        initRequestInfo(formParams, proxyServer, userAgent, headers, builder);
+        //创建post方式请求对象
+        HttpPost httpPost = new HttpPost(url);
+
+        //装填参数
+        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+        if(formParams!=null){
+            for (Map.Entry<String, List<String>> entry : formParams.entrySet()) {
+                nvps.add(new BasicNameValuePair(entry.getKey(), entry.getValue().get(0)));
+            }
+        }
+        //设置参数到请求对象中
+        httpPost.setEntity(new UrlEncodedFormEntity(nvps, Charset.defaultCharset()));
+
+        System.out.println("请求地址："+url);
+        System.out.println("请求参数："+nvps.toString());
+
+        //设置header信息
+        //指定报文头【Content-type】、【User-Agent】
+        httpPost.setHeader("Content-type", "application/x-www-form-urlencoded");
+        httpPost.setHeader("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
+
+//        httpAsyncClientBuilder.setProxy()
+
         return executeRequest(builder.build());
     }
 
@@ -145,14 +154,14 @@ public class SimpleHttpClient {
 
         String domain = PatternUtil.group(request.getUrl(), "//.*?([^\\.]+)\\.(com|net|org|info|coop|int|co\\.uk|org\\.uk|ac\\.uk|uk|cn)", 1);
         if (domain.contains("tohoku") || domain.contains("zhihu") || domain.contains("baidu")) {
-            res = asyncHttpClient.executeRequest(request).get();
+//            res = httpAsyncClient.execute().(request).get();
             return res;
         }
         // 对代理网站进行并发控制
         semaphoreMap.putIfAbsent(domain, new Semaphore(MAX_CONCURRENT_COUNT));
         try {
             semaphoreMap.get(domain).acquire();
-            res = asyncHttpClient.executeRequest(request).get();
+//            res = httpAsyncClient.executeRequest(request).get();
         } finally {
             semaphoreMap.get(domain).release();
         }
@@ -256,4 +265,5 @@ public class SimpleHttpClient {
             return true;
         }
     }
+
 }

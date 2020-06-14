@@ -32,7 +32,7 @@ public class ResultFileWriteTask extends Thread{
     @Override
 //    @Scheduled(initialDelay = 5000, fixedDelay = USER_TASK_DELAY)
     public void run() {
-        BlockingQueue<List<TransWordInfo>> exchangeQueue = tohokuComponent.getTohokuHttpClient().getExchangeQueue();
+        BlockingQueue<List<TransWordInfo>> exchangeQueue = null; //tohokuComponent.getTohokuHttpClient().getExchangeQueue();
 
         System.out.println("开始序列化数据 " + fileName);
 
@@ -68,7 +68,7 @@ public class ResultFileWriteTask extends Thread{
                             continue;
                         }
                     }
-                    List<TransWordInfo> list = tohokuComponent.getTohokuHttpClient().getExchangeQueue().take();
+                    List<TransWordInfo> list = null; //tohokuComponent.getTohokuHttpClient().getExchangeQueue().take();
                     for (TransWordInfo dictItem : list) {
 //                        if(StringUtils.isAnyBlank(dictItem.getDictType(), dictItem.getRealPath(), dictItem.getSourceUrl())){
 //                            logger.error(dictItem.toString());

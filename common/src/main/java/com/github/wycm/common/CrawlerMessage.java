@@ -1,6 +1,7 @@
 package com.github.wycm.common;
 
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Map;
  * Created by wycm on 2018/10/24.
  */
 @Data
+@ToString
 public class CrawlerMessage {
     private String url;
     private int currentRetryTimes = 0;
@@ -49,4 +51,5 @@ public class CrawlerMessage {
         this.currentRetryTimes = currentRetryTimes;
         this.userAgent = userAgent;
     }
+
 }

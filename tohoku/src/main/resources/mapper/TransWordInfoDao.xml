@@ -22,6 +22,10 @@
     <result column="word_pos4" jdbcType="VARCHAR" property="wordPos4" />
     <result column="trans_content4" jdbcType="VARCHAR" property="transContent4" />
     <result column="proofreader" jdbcType="VARCHAR" property="proofreader" />
+    <result column="create_id" jdbcType="BIGINT" property="createId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_id" jdbcType="BIGINT" property="modifyId" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -84,7 +88,8 @@
   <sql id="Base_Column_List">
     id, trans_word, word_length, word_pos, trans_content, word_level, `translation`, 
     dict_type, source_url, real_path, dict_status, word_pos1, trans_content1, word_pos2, 
-    trans_content2, word_pos3, trans_content3, word_pos4, trans_content4, proofreader
+    trans_content2, word_pos3, trans_content3, word_pos4, trans_content4, proofreader, 
+    create_id, create_time, modify_id, modify_time
   </sql>
   <select id="selectByExample" parameterType="com.crawl.tohoku.entity.TransWordInfoExample" resultMap="BaseResultMap">
     select
@@ -131,14 +136,16 @@
       dict_status, word_pos1, trans_content1, 
       word_pos2, trans_content2, word_pos3, 
       trans_content3, word_pos4, trans_content4, 
-      proofreader)
+      proofreader, create_id, create_time, 
+      modify_id, modify_time)
     values (#{transWord,jdbcType=VARCHAR}, #{wordLength,jdbcType=INTEGER}, #{wordPos,jdbcType=VARCHAR}, 
       #{transContent,jdbcType=VARCHAR}, #{wordLevel,jdbcType=INTEGER}, #{translation,jdbcType=VARCHAR}, 
       #{dictType,jdbcType=VARCHAR}, #{sourceUrl,jdbcType=VARCHAR}, #{realPath,jdbcType=VARCHAR}, 
       #{dictStatus,jdbcType=INTEGER}, #{wordPos1,jdbcType=VARCHAR}, #{transContent1,jdbcType=VARCHAR}, 
       #{wordPos2,jdbcType=VARCHAR}, #{transContent2,jdbcType=VARCHAR}, #{wordPos3,jdbcType=VARCHAR}, 
       #{transContent3,jdbcType=VARCHAR}, #{wordPos4,jdbcType=VARCHAR}, #{transContent4,jdbcType=VARCHAR}, 
-      #{proofreader,jdbcType=VARCHAR})
+      #{proofreader,jdbcType=VARCHAR}, #{createId,jdbcType=BIGINT}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifyId,jdbcType=BIGINT}, #{modifyTime,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.crawl.tohoku.entity.TransWordInfo" useGeneratedKeys="true">
     insert into trans_word_info
@@ -200,6 +207,18 @@
       <if test="proofreader != null">
         proofreader,
       </if>
+      <if test="createId != null">
+        create_id,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="modifyId != null">
+        modify_id,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="transWord != null">
@@ -258,6 +277,18 @@
       </if>
       <if test="proofreader != null">
         #{proofreader,jdbcType=VARCHAR},
+      </if>
+      <if test="createId != null">
+        #{createId,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyId != null">
+        #{modifyId,jdbcType=BIGINT},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
       </if>
     </trim>
   </insert>
@@ -330,6 +361,18 @@
       <if test="record.proofreader != null">
         proofreader = #{record.proofreader,jdbcType=VARCHAR},
       </if>
+      <if test="record.createId != null">
+        create_id = #{record.createId,jdbcType=BIGINT},
+      </if>
+      <if test="record.createTime != null">
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.modifyId != null">
+        modify_id = #{record.modifyId,jdbcType=BIGINT},
+      </if>
+      <if test="record.modifyTime != null">
+        modify_time = #{record.modifyTime,jdbcType=TIMESTAMP},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -356,7 +399,11 @@
       trans_content3 = #{record.transContent3,jdbcType=VARCHAR},
       word_pos4 = #{record.wordPos4,jdbcType=VARCHAR},
       trans_content4 = #{record.transContent4,jdbcType=VARCHAR},
-      proofreader = #{record.proofreader,jdbcType=VARCHAR}
+      proofreader = #{record.proofreader,jdbcType=VARCHAR},
+      create_id = #{record.createId,jdbcType=BIGINT},
+      create_time = #{record.createTime,jdbcType=TIMESTAMP},
+      modify_id = #{record.modifyId,jdbcType=BIGINT},
+      modify_time = #{record.modifyTime,jdbcType=TIMESTAMP}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -421,6 +468,18 @@
       <if test="proofreader != null">
         proofreader = #{proofreader,jdbcType=VARCHAR},
       </if>
+      <if test="createId != null">
+        create_id = #{createId,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyId != null">
+        modify_id = #{modifyId,jdbcType=BIGINT},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -444,7 +503,11 @@
       trans_content3 = #{transContent3,jdbcType=VARCHAR},
       word_pos4 = #{wordPos4,jdbcType=VARCHAR},
       trans_content4 = #{transContent4,jdbcType=VARCHAR},
-      proofreader = #{proofreader,jdbcType=VARCHAR}
+      proofreader = #{proofreader,jdbcType=VARCHAR},
+      create_id = #{createId,jdbcType=BIGINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_id = #{modifyId,jdbcType=BIGINT},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}
   </update>
 </mapper>

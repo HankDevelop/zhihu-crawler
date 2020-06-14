@@ -1,10 +1,11 @@
 package com.crawl.tohoku.entity;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * trans_word_info
- * @author Hank
+ * @author 
  */
 public class TransWordInfo implements Serializable {
     private Long id;
@@ -82,6 +83,26 @@ public class TransWordInfo implements Serializable {
      * 校对人
      */
     private String proofreader;
+
+    /**
+     * 创建人id
+     */
+    private Long createId;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 修改人id
+     */
+    private Long modifyId;
+
+    /**
+     * 修改时间
+     */
+    private Date modifyTime;
 
     private static final long serialVersionUID = 1L;
 
@@ -245,6 +266,38 @@ public class TransWordInfo implements Serializable {
         this.proofreader = proofreader;
     }
 
+    public Long getCreateId() {
+        return createId;
+    }
+
+    public void setCreateId(Long createId) {
+        this.createId = createId;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public Long getModifyId() {
+        return modifyId;
+    }
+
+    public void setModifyId(Long modifyId) {
+        this.modifyId = modifyId;
+    }
+
+    public Date getModifyTime() {
+        return modifyTime;
+    }
+
+    public void setModifyTime(Date modifyTime) {
+        this.modifyTime = modifyTime;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -276,7 +329,11 @@ public class TransWordInfo implements Serializable {
             && (this.getTransContent3() == null ? other.getTransContent3() == null : this.getTransContent3().equals(other.getTransContent3()))
             && (this.getWordPos4() == null ? other.getWordPos4() == null : this.getWordPos4().equals(other.getWordPos4()))
             && (this.getTransContent4() == null ? other.getTransContent4() == null : this.getTransContent4().equals(other.getTransContent4()))
-            && (this.getProofreader() == null ? other.getProofreader() == null : this.getProofreader().equals(other.getProofreader()));
+            && (this.getProofreader() == null ? other.getProofreader() == null : this.getProofreader().equals(other.getProofreader()))
+            && (this.getCreateId() == null ? other.getCreateId() == null : this.getCreateId().equals(other.getCreateId()))
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getModifyId() == null ? other.getModifyId() == null : this.getModifyId().equals(other.getModifyId()))
+            && (this.getModifyTime() == null ? other.getModifyTime() == null : this.getModifyTime().equals(other.getModifyTime()));
     }
 
     @Override
@@ -303,6 +360,10 @@ public class TransWordInfo implements Serializable {
         result = prime * result + ((getWordPos4() == null) ? 0 : getWordPos4().hashCode());
         result = prime * result + ((getTransContent4() == null) ? 0 : getTransContent4().hashCode());
         result = prime * result + ((getProofreader() == null) ? 0 : getProofreader().hashCode());
+        result = prime * result + ((getCreateId() == null) ? 0 : getCreateId().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getModifyId() == null) ? 0 : getModifyId().hashCode());
+        result = prime * result + ((getModifyTime() == null) ? 0 : getModifyTime().hashCode());
         return result;
     }
 
@@ -332,6 +393,10 @@ public class TransWordInfo implements Serializable {
         sb.append(", wordPos4=").append(wordPos4);
         sb.append(", transContent4=").append(transContent4);
         sb.append(", proofreader=").append(proofreader);
+        sb.append(", createId=").append(createId);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", modifyId=").append(modifyId);
+        sb.append(", modifyTime=").append(modifyTime);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

@@ -34,14 +34,14 @@ public class TohokuHttpClient extends AbstractHttpClient {
     public LocalIPService getLocalIPService() {
         return localIPService;
     }
-    public static AtomicInteger parseWordCount = new AtomicInteger(0);
+   /* public static AtomicInteger parseWordCount = new AtomicInteger(0);
     public static AtomicInteger parseWordDetailCount = new AtomicInteger(0);
     public static AtomicInteger parseWordNotFountCount = new AtomicInteger(0);
     private BlockingQueue<List<TransWordInfo>> exchangeQueue = new ArrayBlockingQueue<>(100);
 
     public BlockingQueue<List<TransWordInfo>> getExchangeQueue() {
         return exchangeQueue;
-    }
+    }*/
     /*
     private static long startTime = System.currentTimeMillis();
     public static volatile boolean isStop = false;

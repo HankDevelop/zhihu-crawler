@@ -12,37 +12,35 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
+
 @Slf4j
 @Service
 @NoArgsConstructor
-public class TohokuPageProxyTestReceiver extends BaseReceiver{
-
+public class TohokuPageProxyTestReceiver extends BaseReceiver {
 
     @PostConstruct
     @Override
     public void receive() {
-        if ("test".equals(System.getProperties().getProperty("env"))){
+        if ("test".equals(System.getProperties().getProperty("env"))) {
             log.info("test env...");
             return;
         }
-        log.info("receive thread name {}", Thread.currentThread().getName());
-        new Thread(() -> {
-            log.info("start receive {} message", CrawlerUtils.getTaskQueueName(TohokuPageProxyTestTask.class));
-            int corePoolSize = ThreadPoolUtil
-                    .getThreadPool(TohokuPageProxyTestTask.class).getCorePoolSize();
-            for (int i = 0; i < corePoolSize; i++){
-                Proxy proxy = null;
-                try {
-                    proxy = taskQueueService.receiveProxyTask(CrawlerUtils.getTaskQueueName(TohokuPageProxyTestTask.class));
-                } catch (InterruptedException e) {
-                    log.error(e.getMessage(), e);
-                    return;
-                }
-                ThreadPoolUtil
-                        .getThreadPool(TohokuPageProxyTestTask.class)
-                        .execute(new TohokuPageProxyTestTask(proxy, TohokuConstants.TOHOKU_START_URL, tohokuComponent));
+        log.info("start receive {} message", CrawlerUtils.getTaskQueueName(TohokuPageProxyTestTask.class));
+        int corePoolSize = ThreadPoolUtil
+                .getThreadPool(TohokuPageProxyTestTask.class).getCorePoolSize();
+        for (int i = 0; i < corePoolSize; i++) {
+            Proxy proxy = null;
+            try {
+                proxy = taskQueueService.receiveProxyTask(CrawlerUtils.getTaskQueueName(TohokuPageProxyTestTask.class));
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+                return;
             }
-        }).start();
+            ThreadPoolUtil
+                    .getThreadPool(TohokuPageProxyTestTask.class)
+                    .execute(new TohokuPageProxyTestTask(proxy, TohokuConstants.TOHOKU_START_URL, tohokuComponent));
+        }
     }
 
     @Override

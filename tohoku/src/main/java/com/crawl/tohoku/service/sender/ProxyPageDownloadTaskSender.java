@@ -1,6 +1,7 @@
 package com.crawl.tohoku.service.sender;
 
 import com.alibaba.fastjson.JSON;
+import com.crawl.tohoku.TohokuConstants;
 import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
 import com.github.wycm.common.TaskQueueService;
@@ -17,41 +18,38 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 @Slf4j
 @Service
-public class ProxyPageDownloadTaskSender extends BaseSender{
+public class ProxyPageDownloadTaskSender extends BaseSender {
     @Autowired
     TaskQueueService taskQueueService;
 
-    private static final int initQueueSize = 50;
+    private static final int initQueueSize = 1000;
 
     @Override
     @Scheduled(initialDelay = 1000, fixedDelay = 1000 * 60 * 60)
     public void send() {
         log.debug("start send ProxyPageDownloadTask message");
 
-        if (taskQueueService.queueSize(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class)) > initQueueSize){
+        if (taskQueueService.queueSize(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class)) > initQueueSize) {
             log.debug(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class) + "size more than " + initQueueSize + ", not send task");
             return;
         }
-        newSingleThreadExecutor().submit(() -> {
-            ProxyPageProxyPool.proxyMap.keySet().forEach(url -> {
-                String requestId = UUID.randomUUID().toString();
-                if (redisLockUtil.lock(CrawlerUtils.getLockKeyPrefix(TohokuProxyPageDownloadTask.class) + url
-                        , requestId
-                        , 1000 * 60 * 50)){
-                    CrawlerMessage crawlerMessage = new CrawlerMessage(url);
-                    taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class), crawlerMessage, initQueueSize);
-                    log.debug("ProxyPageDownloadTask message send success:{}", JSON.toJSONString(crawlerMessage));
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    log.warn("get lock failed : {}", CrawlerUtils.getLockKeyPrefix(TohokuProxyPageDownloadTask.class) + url);
+        ProxyPageProxyPool.proxyMap.keySet().forEach(url -> {
+            String requestId = UUID.randomUUID().toString();
+            if (redisLockUtil.lock(CrawlerUtils.getLockKeyPrefix(TohokuProxyPageDownloadTask.class) + url
+                    , requestId
+                    , 1000 * 60 * 50)) {
+                CrawlerMessage crawlerMessage = new CrawlerMessage(url);
+                taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class), crawlerMessage, initQueueSize);
+                log.debug("ProxyPageDownloadTask message send success:{}", JSON.toJSONString(crawlerMessage));
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            });
-            log.debug("end send ProxyPageDownloadTask message");
+            } else {
+                log.warn("get lock failed : {}", CrawlerUtils.getLockKeyPrefix(TohokuProxyPageDownloadTask.class) + url);
+            }
         });
-
+        log.debug("end send ProxyPageDownloadTask message");
     }
 }

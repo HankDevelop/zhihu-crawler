@@ -1,10 +1,11 @@
-package com.github.wycm.proxy;
+package com.crawl.tohoku.support;
 
 import ch.qos.logback.classic.turbo.TurboFilter;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.Constants;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.common.util.CrawlerUtils;
+import com.github.wycm.proxy.AbstractHttpClient;
 import com.github.wycm.proxy.util.ProxyUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -86,7 +87,7 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
             Page page = null;
             boolean useProxy = false;
             if (url != null) {
-                if (proxyFlag) {
+                if (proxyFlag && crawlerMessage.getCurrentRetryTimes() > 0) {
                     currentProxy = getProxyQueue().takeProxy(getProxyQueueName());
                     if (Objects.nonNull(currentProxy) && !(currentProxy.getIp().equals(LocalIPService.getLocalIp()))) {
                         useProxy = true;
@@ -123,6 +124,8 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
                     ProxyUtil.handleResponseFailedProxy(currentProxy);
                     retry();
                 }
+            } else {
+                log.error("请求失败，未返回结果，请求信息：{}", crawlerMessage.toString());
             }
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);

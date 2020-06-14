@@ -11,6 +11,7 @@
     <logger name="org.apache.http" level="error"/>
     <logger name="com.jayway.jsonpath" level="warn"/>
     <logger name="com.github.wycm.common.util.ThreadPoolMonitor" level="debug"/>
+    <logger name="com.crawl.tohoku" level="debug"/>
 
     <!--写入日志到控制台的appender,用默认的,但是要去掉charset,否则windows下tomcat下乱码-->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

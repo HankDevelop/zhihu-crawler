@@ -28,10 +28,10 @@ public class ProxyPageProxyPool {
     public void init() {
         int pages = 16;
         for (int i = 1; i <= pages; i++) {
-            proxyMap.put("http://www.xicidaili.com/wt/" + i + ".html", XicidailiProxyListPageParser.class);
-            proxyMap.put("http://www.xicidaili.com/nn/" + i + ".html", XicidailiProxyListPageParser.class);
-            proxyMap.put("http://www.xicidaili.com/wn/" + i + ".html", XicidailiProxyListPageParser.class);
-            proxyMap.put("http://www.xicidaili.com/nt/" + i + ".html", XicidailiProxyListPageParser.class);
+//            proxyMap.put("http://www.xicidaili.com/wt/" + i + ".html", XicidailiProxyListPageParser.class);
+//            proxyMap.put("http://www.xicidaili.com/nn/" + i + ".html", XicidailiProxyListPageParser.class);
+//            proxyMap.put("http://www.xicidaili.com/wn/" + i + ".html", XicidailiProxyListPageParser.class);
+//            proxyMap.put("http://www.xicidaili.com/nt/" + i + ".html", XicidailiProxyListPageParser.class);
             proxyMap.put("https://www.kuaidaili.com/free/inha/" + i + "/", KuaiProxyListPageParser.class);
             //高匿
 //            proxyMap.put("http://www.mimiip.com/gngao/" + i, MimiipProxyListPageParser.class);

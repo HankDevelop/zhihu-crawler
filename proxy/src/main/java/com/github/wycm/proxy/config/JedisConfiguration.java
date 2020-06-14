@@ -29,7 +29,7 @@ public class JedisConfiguration {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxTotal(200);
         jedisPoolConfig.setMaxIdle(200);
-        jedisPoolConfig.setMinIdle(0);
+        jedisPoolConfig.setMinIdle(5);
         JedisPool pool = null;
         String password = env.getProperty("spring.jedis.password");
         if (password  != null){

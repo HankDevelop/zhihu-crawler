@@ -10,7 +10,7 @@ import com.github.wycm.common.util.Constants;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.proxy.AbstractHttpClient;
 import com.github.wycm.proxy.AbstractPageProxyTestTask;
-import com.github.wycm.proxy.AbstractPageTask;
+import com.crawl.tohoku.support.AbstractPageTask;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

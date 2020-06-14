@@ -13,4 +13,9 @@ public class SystemUtil {
         int waitTime = 3000;
         return getCpuCoreSize() * (calcTaskTime + waitTime) / calcTaskTime;
     }
+
+    public static void main(String[] args) {
+        System.out.println(getCpuCoreSize());
+        System.out.println(getRecommendThreadSize());
+    }
 }

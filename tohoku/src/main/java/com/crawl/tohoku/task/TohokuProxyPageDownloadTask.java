@@ -9,7 +9,7 @@ import com.github.wycm.common.util.CrawlerUtils;
 import com.github.wycm.common.util.RedisLockUtil;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.proxy.AbstractHttpClient;
-import com.github.wycm.proxy.AbstractPageTask;
+import com.crawl.tohoku.support.AbstractPageTask;
 import com.github.wycm.proxy.ProxyListPageParser;
 import com.github.wycm.proxy.ProxyPageProxyPool;
 import com.github.wycm.proxy.site.ProxyListPageParserFactory;

@@ -1,62 +1,29 @@
 package com.crawl.tohoku.service.sender;
 
 import com.crawl.tohoku.TohokuConstants;
-import com.crawl.tohoku.support.ResultFileWriteTask;
-import com.crawl.tohoku.task.TohokuDictQueryTask;
+import com.crawl.tohoku.task.Kdic33DictQueryTask;
 import com.github.wycm.common.CrawlerMessage;
+import com.github.wycm.common.ShutdownService;
 import com.github.wycm.common.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 @Slf4j
 @Service
-public class TohokuDictQueryTaskSender extends BaseSender implements ApplicationListener<ContextRefreshedEvent> {
+public class Kdic33DictQueryTaskSender extends BaseSender{
     @Autowired
     private TaskQueueService taskQueueService;
-    /*@Autowired
-    private ResultFileWriteTask fileWriteTask;*/
 
     private Map<String, Integer> keyMaps = new HashMap<>();
 
     {
-//        keyMaps.put("a", 1119);
-//        keyMaps.put("b", 870);
-//        keyMaps.put("c", 335);
-//        keyMaps.put("d", 459);
-//        keyMaps.put("e", 934);
-//        keyMaps.put("f", 306);
-//        keyMaps.put("g", 586);
-//        keyMaps.put("h", 657);
-//        keyMaps.put("i", 1263);
-//        keyMaps.put("j", 327);
-//        keyMaps.put("k", 507);
-//        keyMaps.put("l", 600);
-//        keyMaps.put("m", 860);
-//        keyMaps.put("n", 1003);
-//        keyMaps.put("o", 444);
-//        keyMaps.put("p", 18);
-//        keyMaps.put("q", 0);
-//        keyMaps.put("r", 665);
-//        keyMaps.put("s", 526);
-//        keyMaps.put("t", 440);
-//        keyMaps.put("u", 931);
-//        keyMaps.put("v", 0);
-//        keyMaps.put("w", 177);
-//        keyMaps.put("x", 0);
-//        keyMaps.put("y", 369);
-//        keyMaps.put("z", 6);
-//        keyMaps.put("@", 255);
-
         keyMaps.put("a", 1133);
         keyMaps.put("b", 874);
         keyMaps.put("c", 360);
@@ -89,7 +56,7 @@ public class TohokuDictQueryTaskSender extends BaseSender implements Application
     @Override
     @Scheduled(initialDelay = 5000, fixedDelay = 1000 * 60 * 60)
     public void send() {
-        log.info("start send query dict message");
+        log.info("start send Kdic33DictQueryTask dict message");
         newSingleThreadExecutor().submit(() -> {
 
             Map<String, List<String>> paramMap = new HashMap<>();
@@ -111,7 +78,7 @@ public class TohokuDictQueryTaskSender extends BaseSender implements Application
                     String currentPage = ite.next().toString();
                     paramMap.put("currentPage", Arrays.asList(currentPage));
                     paramMap.put("keyword", Arrays.asList(keyWord));
-                    taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(TohokuDictQueryTask.class), new CrawlerMessage(TohokuConstants.TOHOKU_DICT_URL, paramMap), 10);
+                    taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(Kdic33DictQueryTask.class), new CrawlerMessage(TohokuConstants.TOHOKU_KDIC_URL, paramMap), TohokuConstants.MAX_TASK_LENGTH);
 
                     /*params.put("currentPage", currentPage);
                     params.put("keyword", keyWord);
@@ -136,19 +103,21 @@ public class TohokuDictQueryTaskSender extends BaseSender implements Application
 //                rows += keyRows;
 //                logger.info("以{}为关键字，每页50行，共查询{}页", keyWord, keyRows);
             }
-//            String startUrl = TohokuConstants.TOHOKU_DICT_URL;
+//            String startUrl = TohokuConstants.TOHOKU_KDIC_URL;
 ////            String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
 //            taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(TohokuDictQueryTask.class), new CrawlerMessage(startUrl, paramMap), 100000);
 //            log.info("end send ZhihuUser message, sendSize:{}", sendSize.get());
         });
-    }
-
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        if (contextRefreshedEvent.getApplicationContext().getParent() == null) {//保证只执行一次
-//            send();
+        log.info("end send Kdic33DictQueryTask message");
+        // 发送任务执行完成后，检查队列消费情况，当目标队列为空则暂停线程池
+        /*while (taskQueueService.queueSize(CrawlerUtils.getTaskQueueName(Kdic33DictQueryTask.class)) > 0){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+        shutdownService.destroy();*/
     }
-
 
 }

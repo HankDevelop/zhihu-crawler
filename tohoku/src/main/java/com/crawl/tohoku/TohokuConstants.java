@@ -5,6 +5,8 @@ import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 
 public class TohokuConstants {
 
+    public static final int MAX_TASK_LENGTH = 10000;
+
     public static final String PROXY_PAGE_REDIS_KEY_PREFIX = "tohoku:proxy:";
 
     public static final String TOHOKU_PAGE_REDIS_KEY_PREFIX = "tohoku:tohoku:";
@@ -19,7 +21,14 @@ public class TohokuConstants {
      */
     public final static String TOHOKU_START_URL = "http://hkuri.cneas.tohoku.ac.jp";
 
-    public final static String TOHOKU_DICT_URL = "http://hkuri.cneas.tohoku.ac.jp/project1/kdic/listAction";
+    /**
+     * <p>浏览器页面地址：http://hkuri.cneas.tohoku.ac.jp/project1/manchu/list?groupId=11</p>
+     */
+    public final static String TOHOKU_MANCHU_URL = "http://hkuri.cneas.tohoku.ac.jp/project1/manchu/listAction";
+    /**
+     * <p>浏览器页面地址：http://hkuri.cneas.tohoku.ac.jp/project1/kdic/list?groupId=33</p>
+     */
+    public final static String TOHOKU_KDIC_URL = "http://hkuri.cneas.tohoku.ac.jp/project1/kdic/listAction";
     /**
      * 图片下载地址URL
      */

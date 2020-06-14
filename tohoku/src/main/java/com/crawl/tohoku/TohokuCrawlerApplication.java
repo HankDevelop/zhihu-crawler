@@ -21,10 +21,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @PropertySource(value = "classpath:/prop/jdbc.properties", encoding = "utf-8")
 @MapperScan("com.crawl.tohoku.dao")
 public class TohokuCrawlerApplication {
+
 	public static void main(String[] args) {
 		SpringApplication.run(TohokuCrawlerApplication.class, args);
 	}
-
 
 }
 
