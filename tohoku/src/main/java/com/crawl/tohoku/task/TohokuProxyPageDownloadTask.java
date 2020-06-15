@@ -2,6 +2,8 @@ package com.crawl.tohoku.task;
 
 import com.alibaba.fastjson.JSON;
 import com.crawl.tohoku.TohokuConstants;
+import com.crawl.tohoku.dao.DictQueryInfoDao;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.crawl.tohoku.service.TohokuComponent;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.Constants;
@@ -60,6 +62,11 @@ public class TohokuProxyPageDownloadTask extends AbstractPageTask implements Run
     @Override
     protected TaskQueueService getTaskQueueService() {
         return tohokuComponent.getTaskQueueService();
+    }
+
+    @Override
+    protected DictQueryInfoDao getDictQueryInfoDao() {
+        return tohokuComponent.getDictQueryInfoDao();
     }
 
     @Override

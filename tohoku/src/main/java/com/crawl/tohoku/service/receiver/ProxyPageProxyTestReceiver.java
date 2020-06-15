@@ -4,7 +4,7 @@ import com.crawl.tohoku.TohokuConstants;
 import com.crawl.tohoku.task.TohokuProxyPageProxyTestTask;
 import com.github.wycm.common.CrawlerMessage;
 import com.github.wycm.common.Proxy;
-import com.github.wycm.common.TaskQueueService;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import lombok.NoArgsConstructor;

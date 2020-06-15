@@ -1,6 +1,11 @@
 package com.crawl.tohoku.support;
 
-import ch.qos.logback.classic.turbo.TurboFilter;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.crawl.tohoku.dao.DictQueryInfoDao;
+import com.crawl.tohoku.entity.DictQueryInfo;
+import com.crawl.tohoku.entity.DictQueryInfoExample;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.Constants;
 import com.github.wycm.common.util.ThreadPoolUtil;
@@ -14,6 +19,8 @@ import org.apache.http.HttpStatus;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.proxy.ProxyServer;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -119,6 +126,18 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
                 if (status == HttpStatus.SC_OK && !responseError(page)) {
                     ProxyUtil.handleResponseSuccProxy(currentProxy);
                     handle(page);
+                    DictQueryInfoExample dictQueryInfoExample = new DictQueryInfoExample();
+                    DictQueryInfoExample.Criteria criteria = dictQueryInfoExample.createCriteria();
+                    criteria.andRequestUriEqualTo(crawlerMessage.getUrl());
+                    criteria.andRequestInfoEqualTo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
+                    List<DictQueryInfo> dictQueryInfos = getDictQueryInfoDao().selectByExample(dictQueryInfoExample);
+                    if (dictQueryInfos != null && !dictQueryInfos.isEmpty()) {
+                        DictQueryInfo dictQueryInfo = dictQueryInfos.get(0);
+                        dictQueryInfo.setRespCode(HttpStatus.SC_OK);
+                        dictQueryInfo.setRespTxt(page.getHtml());
+                        dictQueryInfo.setModifyTime(new Date());
+                        getDictQueryInfoDao().updateByExampleWithBLOBs(dictQueryInfo, dictQueryInfoExample);
+                    }
                 } else {
                     log.error(logStr);
                     ProxyUtil.handleResponseFailedProxy(currentProxy);
@@ -208,6 +227,8 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
     protected abstract ProxyQueue getProxyQueue();
 
     protected abstract TaskQueueService getTaskQueueService();
+
+    protected abstract DictQueryInfoDao getDictQueryInfoDao();
 
     protected abstract LocalIPService getLocalIPService();
 

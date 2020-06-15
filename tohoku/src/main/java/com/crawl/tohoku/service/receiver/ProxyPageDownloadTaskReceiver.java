@@ -2,7 +2,7 @@ package com.crawl.tohoku.service.receiver;
 
 import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
-import com.github.wycm.common.TaskQueueService;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import lombok.NoArgsConstructor;

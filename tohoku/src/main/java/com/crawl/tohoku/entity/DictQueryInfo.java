@@ -53,6 +53,9 @@ public class DictQueryInfo implements Serializable {
      */
     private String modifyId;
 
+    /**
+     * 响应body
+     */
     private String respTxt;
 
     private static final long serialVersionUID = 1L;

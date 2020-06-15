@@ -2,14 +2,14 @@ package com.crawl.tohoku.task;
 
 import com.crawl.tohoku.TohokuConstants;
 import com.crawl.tohoku.service.TohokuComponent;
+import com.crawl.tohoku.support.AbstractPageProxyTestTask;
 import com.github.wycm.common.Page;
 import com.github.wycm.common.Proxy;
 import com.github.wycm.common.ProxyQueue;
-import com.github.wycm.common.TaskQueueService;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.util.Constants;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.proxy.AbstractHttpClient;
-import com.github.wycm.proxy.AbstractPageProxyTestTask;
 import com.crawl.tohoku.support.AbstractPageTask;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

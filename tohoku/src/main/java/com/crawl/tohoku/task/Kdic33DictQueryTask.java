@@ -1,7 +1,9 @@
 package com.crawl.tohoku.task;
 
 import com.crawl.tohoku.TohokuConstants;
+import com.crawl.tohoku.dao.DictQueryInfoDao;
 import com.crawl.tohoku.entity.TransWordInfo;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.crawl.tohoku.service.TohokuComponent;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.Constants;
@@ -66,6 +68,11 @@ public class Kdic33DictQueryTask extends AbstractPageTask {
     @Override
     protected TaskQueueService getTaskQueueService() {
         return tohokuComponent.getTaskQueueService();
+    }
+
+    @Override
+    protected DictQueryInfoDao getDictQueryInfoDao() {
+        return tohokuComponent.getDictQueryInfoDao();
     }
 
     @Override

@@ -4,11 +4,10 @@ import com.crawl.tohoku.TohokuConstants;
 import com.crawl.tohoku.task.Kdic33DictQueryTask;
 import com.github.wycm.common.CrawlerMessage;
 import com.github.wycm.common.ShutdownService;
-import com.github.wycm.common.TaskQueueService;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

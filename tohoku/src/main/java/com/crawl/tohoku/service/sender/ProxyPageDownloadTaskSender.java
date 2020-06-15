@@ -1,10 +1,9 @@
 package com.crawl.tohoku.service.sender;
 
 import com.alibaba.fastjson.JSON;
-import com.crawl.tohoku.TohokuConstants;
 import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
-import com.github.wycm.common.TaskQueueService;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
 import com.github.wycm.proxy.ProxyPageProxyPool;
 import lombok.extern.slf4j.Slf4j;

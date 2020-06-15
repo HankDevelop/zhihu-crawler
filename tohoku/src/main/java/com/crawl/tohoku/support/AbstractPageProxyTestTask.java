@@ -1,8 +1,10 @@
-package com.github.wycm.proxy;
+package com.crawl.tohoku.support;
 
+import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.Constants;
 import com.github.wycm.common.util.CrawlerUtils;
+import com.github.wycm.proxy.AbstractHttpClient;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
