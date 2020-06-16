@@ -98,7 +98,7 @@ public class TaskQueueService {
                     List<DictQueryInfo> dictQueryInfos = dictQueryInfoDao.selectByExample(dictQueryInfoExample);
                     if (dictQueryInfos != null && !dictQueryInfos.isEmpty()) {
                         DictQueryInfo dictQueryInfo = dictQueryInfos.get(0);
-                        if (dictQueryInfo.getRespCode() == HttpStatus.SC_OK) {
+                        if (dictQueryInfo.getRespCode() != null && dictQueryInfo.getRespCode() == HttpStatus.SC_OK) {
                             continue;
                         }
                     } else {
