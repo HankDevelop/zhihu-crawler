@@ -93,7 +93,7 @@ public class Kdic33DictQueryTask extends AbstractPageTask {
             logger.warn("转换字{}查询解析结果为空", this.queryParams);
             return;
         }
-        logger.debug(transWordInfos.toString());
+//        logger.debug(transWordInfos.toString());
 //        parseWordCount.getAndAdd(transWordInfos.size());
         /*try {
             tohokuComponent.getTohokuHttpClient().getExchangeQueue().put(dictItems);
