@@ -1,5 +1,6 @@
 package com.crawl.tohoku.service.receiver;
 
+import com.crawl.tohoku.service.sender.ProxyPageDownloadTaskSender;
 import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
 import com.crawl.tohoku.service.TaskQueueService;
@@ -22,9 +23,18 @@ public class ProxyPageDownloadTaskReceiver extends BaseReceiver {
     @Autowired
     private TaskQueueService taskQueueService;
 
-    @PostConstruct
+    @Autowired
+    private ProxyPageDownloadTaskSender taskSender;
+
     @Override
+    @PostConstruct
     public void receive() {
+        ThreadPoolUtil
+                .getThreadPool(TohokuProxyPageDownloadTask.class)
+                .execute(() -> {
+                    taskSender.send();
+                });
+
         if ("test".equals(System.getProperties().getProperty("env"))) {
             log.info("test env...");
             return;

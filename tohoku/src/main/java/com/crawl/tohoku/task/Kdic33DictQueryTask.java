@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
+import java.util.Random;
 
 /**
  * 根据输入keyword查询在线字典结果
@@ -123,7 +124,17 @@ public class Kdic33DictQueryTask extends AbstractPageTask {
     public void retry() {
         if (getCurrentRetryTimes() <= getMaxRetryTimes()) {
             CrawlerMessage crawlerMessage = new CrawlerMessage(url, getCurrentRetryTimes() + 1);
-            getTaskQueueService().sendTask(CrawlerUtils.getTaskQueueName(Kdic33DictQueryTask.class), crawlerMessage, TohokuConstants.MAX_TASK_LENGTH);
+            boolean isSend = true;
+            do {
+                isSend = getTaskQueueService().sendTask(CrawlerUtils.getTaskQueueName(Kdic33DictQueryTask.class), crawlerMessage, TohokuConstants.MAX_TASK_LENGTH);
+                if (!isSend) {
+                    try {
+                        Thread.sleep(new Random().nextInt(1000));
+                    } catch (InterruptedException e) {
+                        log.error(e.getMessage());
+                    }
+                }
+            } while (!isSend);
         } else {
             log.warn(this.getClass().getSimpleName() + "maxRetryTimes:{}, currentRetryTimes:{}", getMaxRetryTimes(), getCurrentRetryTimes());
         }

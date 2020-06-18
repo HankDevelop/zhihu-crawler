@@ -3,10 +3,7 @@ package com.github.wycm.common.util;
 import com.github.wycm.common.parser.Parser;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Created by wycm on 2018/10/22.
@@ -30,6 +27,10 @@ public class ThreadPoolUtil {
     public static ThreadPoolExecutor createThreadPool(Class<? extends Runnable> taskClass, int poolSize){
         return createThreadPool(getThreadPoolName(taskClass), poolSize, poolSize);
     }
+    public static ThreadPoolExecutor createSingleThreadPool(String poolName){
+        return createThreadPool(poolName, 1, 1);
+    }
+
     public static String getThreadPoolName(Class<? extends Runnable> taskClass){
         return taskClass.getSimpleName().substring(0, taskClass.getSimpleName().length() - 4) + "ThreadPool";
     }

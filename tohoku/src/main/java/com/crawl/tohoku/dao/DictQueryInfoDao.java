@@ -22,6 +22,8 @@ public interface DictQueryInfoDao {
 
     DictQueryInfo selectByPrimaryKey(Long id);
 
+    DictQueryInfo selectUniqueByExample(DictQueryInfoExample example);
+
     int updateByExampleSelective(@Param("record") DictQueryInfo record, @Param("example") DictQueryInfoExample example);
 
     int updateByExampleWithBLOBs(@Param("record") DictQueryInfo record, @Param("example") DictQueryInfoExample example);

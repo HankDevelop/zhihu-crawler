@@ -17,27 +17,31 @@ public abstract class BaseReceiver<T extends AbstractPageTask> {
     @Autowired
     protected TohokuComponent tohokuComponent;
 
+    @Autowired
+
     protected abstract void receive();
 
     protected void receive(Class<T> tClass){
-        Thread.currentThread().setName(tClass.getSimpleName() + "Receiver");
-        if ("test".equals(System.getProperties().getProperty("env"))){
-            log.info("test env...");
-            return;
-        }
-        log.info("start receive {} message", CrawlerUtils.getTaskQueueName(tClass));
-        int corePoolSize = ThreadPoolUtil.getThreadPool(tClass).getCorePoolSize();
-        for (int i = 0; i < corePoolSize; i++){
-            CrawlerMessage message = null;
-            try {
-                message = taskQueueService.receiveTask(CrawlerUtils.getTaskQueueName(tClass));
-            } catch (InterruptedException e) {
-                log.error(e.getMessage(), e);
+        ThreadPoolUtil.createSingleThreadPool(tClass.getName()).execute(()->{
+            Thread.currentThread().setName(tClass.getSimpleName() + "Receiver");
+            if ("test".equals(System.getProperties().getProperty("env"))){
+                log.info("test env...");
                 return;
             }
-            ThreadPoolUtil.getThreadPool(tClass).execute(createNewTask(message));
-            log.info("create {} task success", tClass);
-        }
+            log.info("start receive {} message", CrawlerUtils.getTaskQueueName(tClass));
+            int corePoolSize = ThreadPoolUtil.getThreadPool(tClass).getCorePoolSize();
+            for (int i = 0; i < corePoolSize; i++){
+                CrawlerMessage message = null;
+                try {
+                    message = taskQueueService.receiveTask(CrawlerUtils.getTaskQueueName(tClass));
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage(), e);
+                    return;
+                }
+                ThreadPoolUtil.getThreadPool(tClass).execute(createNewTask(message));
+                log.info("create {} task success", tClass);
+            }
+        });
     }
 
     protected abstract Runnable createNewTask(CrawlerMessage crawlerMessage);

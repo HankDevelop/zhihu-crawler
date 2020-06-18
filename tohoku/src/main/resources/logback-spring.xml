@@ -10,8 +10,8 @@
     <logger name="org.springframework.web" level="warn"/>
     <logger name="org.apache.http" level="error"/>
     <logger name="com.jayway.jsonpath" level="warn"/>
-    <logger name="com.github.wycm.common.util.ThreadPoolMonitor" level="debug"/>
-    <logger name="com.crawl.tohoku" level="debug"/>
+    <logger name="com.github.wycm.common.util.ThreadPoolMonitor" level="info"/>
+    <logger name="com.crawl.tohoku" level="info"/>
 
     <!--写入日志到控制台的appender,用默认的,但是要去掉charset,否则windows下tomcat下乱码-->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -58,8 +58,10 @@
     <!--开发环境:打印控制台-->
     <springProfile name="dev">
         <root level="info">
-            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
+        </root>
+        <root level="error">
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 </configuration>

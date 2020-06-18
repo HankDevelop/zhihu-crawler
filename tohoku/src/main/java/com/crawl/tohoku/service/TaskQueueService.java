@@ -14,7 +14,9 @@ import com.github.wycm.common.util.CrawlerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -22,6 +24,7 @@ import redis.clients.jedis.JedisPool;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -40,22 +43,28 @@ public class TaskQueueService {
      * @param queueName
      * @param maxLength
      */
-    public void sendTask(String queueName, CrawlerMessage message, int maxLength) {
+    public boolean sendTask(String queueName, CrawlerMessage message, int maxLength) {
         DictQueryInfoExample dictQueryInfoExample = new DictQueryInfoExample();
         DictQueryInfoExample.Criteria criteria = dictQueryInfoExample.createCriteria();
         criteria.andRequestUriEqualTo(message.getUrl());
         criteria.andRequestInfoEqualTo(JSON.toJSONString(message.getMessageContext(), SerializerFeature.MapSortField));
-        List<DictQueryInfo> dictQueryInfos = dictQueryInfoDao.selectByExample(dictQueryInfoExample);
-        if (dictQueryInfos == null || dictQueryInfos.isEmpty()) {
-            sendTask(queueName, JSON.toJSONString(message), maxLength);
+        Optional<DictQueryInfo> queryInfo = Optional.ofNullable(dictQueryInfoDao.selectUniqueByExample(dictQueryInfoExample));
+        if (queryInfo.isPresent()) {
+            Optional<Integer> respCode = Optional.ofNullable(queryInfo.get().getRespCode());
+            if (respCode.isPresent() && HttpStatus.SC_OK == respCode.get()) {
+                log.info(queryInfo.toString());
+            }
+        } else {
+            return sendTask(queueName, JSON.toJSONString(message), maxLength);
         }
+        return true;
     }
 
-    public void sendTask(String queueName, String message, int maxLength) {
-        sendTask(queueName, message, maxLength, null);
+    public boolean sendTask(String queueName, String message, int maxLength) {
+        return sendTask(queueName, message, maxLength, null);
     }
 
-    public void sendTask(String queueName, String message, int maxLength, Consumer<String> sendSuccConsumer) {
+    public boolean sendTask(String queueName, String message, int maxLength, Consumer<String> sendSuccConsumer) {
         Jedis jedis = jedisPool.getResource();
         try {
             if (jedis.llen(queueName) < maxLength) {
@@ -65,10 +74,12 @@ public class TaskQueueService {
                 }
             } else {
                 log.debug("queue is full, queueName:{}", queueName);
+                return false;
             }
         } finally {
             jedis.close();
         }
+        return true;
     }
 
     public Long queueSize(String queueName) {
@@ -95,12 +106,9 @@ public class TaskQueueService {
                     DictQueryInfoExample.Criteria criteria = dictQueryInfoExample.createCriteria();
                     criteria.andRequestUriEqualTo(crawlerMessage.getUrl());
                     criteria.andRequestInfoEqualTo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
-                    List<DictQueryInfo> dictQueryInfos = dictQueryInfoDao.selectByExample(dictQueryInfoExample);
-                    if (dictQueryInfos != null && !dictQueryInfos.isEmpty()) {
-                        DictQueryInfo dictQueryInfo = dictQueryInfos.get(0);
-                        if (dictQueryInfo.getRespCode() != null && dictQueryInfo.getRespCode() == HttpStatus.SC_OK) {
-                            continue;
-                        }
+                    Optional<DictQueryInfo> queryInfo = Optional.ofNullable(dictQueryInfoDao.selectUniqueByExample(dictQueryInfoExample));
+                    if (queryInfo.isPresent() && HttpStatus.SC_OK != queryInfo.get().getRespCode()) {
+                        continue;
                     } else {
                         DictQueryInfo dictQueryInfo = new DictQueryInfo();
                         dictQueryInfo.setRequestUri(crawlerMessage.getUrl());

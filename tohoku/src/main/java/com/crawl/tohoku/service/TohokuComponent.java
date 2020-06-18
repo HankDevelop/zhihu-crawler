@@ -67,7 +67,7 @@ public class TohokuComponent {
     @PostConstruct
     public static void initThreadPool() {
         ThreadPoolUtil.createThreadPool(Kdic33DictQueryTask.class, SystemUtil.getRecommendThreadSize());
-        ThreadPoolUtil.createThreadPool(DownloadSourceImageTask.class, SystemUtil.getRecommendThreadSize() / 2);
+//        ThreadPoolUtil.createThreadPool(DownloadSourceImageTask.class, SystemUtil.getRecommendThreadSize() / 2);
         ThreadPoolUtil.createThreadPool(TohokuProxyPageProxyTestTask.class, SystemUtil.getRecommendThreadSize() / 2);
         ThreadPoolUtil.createThreadPool(TohokuPageProxyTestTask.class, SystemUtil.getRecommendThreadSize() / 2);
         ThreadPoolUtil.createThreadPool(TohokuProxyPageDownloadTask.class, SystemUtil.getRecommendThreadSize() / 4);

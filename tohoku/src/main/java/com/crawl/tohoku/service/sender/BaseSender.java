@@ -3,9 +3,7 @@ package com.crawl.tohoku.service.sender;
 import com.github.wycm.common.util.RedisLockUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class BaseSender {
-    @Autowired
-    protected RedisLockUtil redisLockUtil;
+public interface BaseSender {
 
     abstract void send();
 }

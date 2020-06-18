@@ -126,6 +126,16 @@
       </if>
     </if>
   </select>
+  <select id="selectUniqueByExample" parameterType="com.crawl.tohoku.entity.DictQueryInfoExample" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from dict_query_info
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    limit 1
+  </select>
+
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
     select 
     <include refid="Base_Column_List" />

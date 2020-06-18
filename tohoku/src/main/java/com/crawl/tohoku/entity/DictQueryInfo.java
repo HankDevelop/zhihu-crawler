@@ -196,7 +196,6 @@ public class DictQueryInfo implements Serializable {
         sb.append(", createId=").append(createId);
         sb.append(", modifyTime=").append(modifyTime);
         sb.append(", modifyId=").append(modifyId);
-        sb.append(", respTxt=").append(respTxt);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

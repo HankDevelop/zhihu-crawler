@@ -5,24 +5,28 @@ import com.crawl.tohoku.task.Kdic33DictQueryTask;
 import com.github.wycm.common.CrawlerMessage;
 import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 @Slf4j
 @Service
-public class Kdic33DictQueryTaskSender extends BaseSender{
+public class Kdic33DictQueryTaskSender implements BaseSender {
     @Autowired
     private TaskQueueService taskQueueService;
 
-    private Map<String, Integer> keyMaps = new HashMap<>();
-
-    {
+    public void send() {
+        log.info("start send Kdic33DictQueryTask dict message");
+        Map<String, Integer> keyMaps = new HashMap<>();
         keyMaps.put("a", 1133);
         keyMaps.put("b", 874);
         keyMaps.put("c", 360);
@@ -50,73 +54,39 @@ public class Kdic33DictQueryTaskSender extends BaseSender{
         keyMaps.put("y", 373);
         keyMaps.put("z", 6);
         keyMaps.put("@", 257);
-    }
+        Map<String, List<String>> paramMap = new HashMap<>();
+        paramMap.put("searchRange", Arrays.asList("1"));
+        paramMap.put("searchMethod", Arrays.asList("4"));
+        paramMap.put("groupId", Arrays.asList("33"));
+        paramMap.put("pageSize", Arrays.asList("50"));
+        paramMap.put("dicIds", Arrays.asList("73,74"));
+        boolean isSend = true;
+        for (String keyWord : keyMaps.keySet()) {
+            int keyRows = keyMaps.get(keyWord).intValue();
+            List<Integer> list = new ArrayList();
+            for (int i = 1; i <= keyRows; i++) {
+                list.add(i);
+            }
+            Collections.shuffle(list);
 
-    @Override
-    @Scheduled(initialDelay = 5000, fixedDelay = 1000 * 60 * 60)
-    public void send() {
-        log.info("start send Kdic33DictQueryTask dict message");
-        newSingleThreadExecutor().submit(() -> {
-
-            Map<String, List<String>> paramMap = new HashMap<>();
-            paramMap.put("searchRange", Arrays.asList("1"));
-            paramMap.put("searchMethod", Arrays.asList("4"));
-            paramMap.put("groupId", Arrays.asList("33"));
-            paramMap.put("pageSize", Arrays.asList("50"));
-            paramMap.put("dicIds", Arrays.asList("73,74"));
-            for (String keyWord : keyMaps.keySet()) {
-                int keyRows = keyMaps.get(keyWord).intValue();
-                List<Integer> list = new ArrayList();
-                for (int i = 1; i <= keyRows; i++) {
-                    list.add(i);
-                }
-                Collections.shuffle(list);
-
-                Iterator ite = list.iterator();
-                while (ite.hasNext()) {
-                    String currentPage = ite.next().toString();
-                    paramMap.put("currentPage", Arrays.asList(currentPage));
-                    paramMap.put("keyword", Arrays.asList(keyWord));
-                    taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(Kdic33DictQueryTask.class), new CrawlerMessage(TohokuConstants.TOHOKU_KDIC_URL, paramMap), TohokuConstants.MAX_TASK_LENGTH);
-
-                    /*params.put("currentPage", currentPage);
-                    params.put("keyword", keyWord);
-                    HttpPost postRequest = new HttpPost(startUrl);
-                    HttpClientUtil.setHttpPostParams(postRequest, params);
-                    // 防止写文件数据阻塞，导致生产线程阻塞
-                    if (listPageThreadPool.getActiveCount() > 40 || listPageThreadPool.getQueue().size() > 150) {
+            Iterator ite = list.iterator();
+            while (ite.hasNext()) {
+                String currentPage = ite.next().toString();
+                paramMap.put("currentPage", Arrays.asList(currentPage));
+                paramMap.put("keyword", Arrays.asList(keyWord));
+                do {
+                    isSend = taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(Kdic33DictQueryTask.class), new CrawlerMessage(TohokuConstants.TOHOKU_KDIC_URL, paramMap), TohokuConstants.MAX_TASK_LENGTH);
+                    if (!isSend) {
                         try {
-                            Thread.sleep(new Random().nextInt(10) * 4000);
+                            Thread.sleep(new Random().nextInt(1000));
                         } catch (InterruptedException e) {
-                            logger.error("主线程sleep出现错误：", e);
+                            log.error(e.getMessage());
                         }
                     }
-                    logger.info("查询参数：{}", params.toString());
-                    listPageThreadPool.execute(new TohokuDictQueryTask(postRequest, keyWord + "_" + currentPage, Config.isProxy));
-                    try {
-                        Thread.sleep(new Random().nextInt(5) * 1000);
-                    } catch (InterruptedException e) {
-                        logger.error("主线程sleep出现错误：", e);
-                    }*/
-                }
-//                rows += keyRows;
-//                logger.info("以{}为关键字，每页50行，共查询{}页", keyWord, keyRows);
-            }
-//            String startUrl = TohokuConstants.TOHOKU_KDIC_URL;
-////            String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
-//            taskQueueService.sendTask(CrawlerUtils.getTaskQueueName(TohokuDictQueryTask.class), new CrawlerMessage(startUrl, paramMap), 100000);
-//            log.info("end send ZhihuUser message, sendSize:{}", sendSize.get());
-        });
-        log.info("end send Kdic33DictQueryTask message");
-        // 发送任务执行完成后，检查队列消费情况，当目标队列为空则暂停线程池
-        /*while (taskQueueService.queueSize(CrawlerUtils.getTaskQueueName(Kdic33DictQueryTask.class)) > 0){
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                } while (!isSend);
             }
         }
-        shutdownService.destroy();*/
+        log.info("end send Kdic33DictQueryTask message");
     }
 
 }

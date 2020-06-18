@@ -69,7 +69,7 @@ public abstract class DictContentListParser implements ListPageParser<TransWordI
         }
     }
 
-    @Transactional
+    @Transactional(rollbackFor = RuntimeException.class)
     public void persistenceTransWordInfo(TransWordInfo transWordInfo) {
         TransWordInfoExample transWordInfoExample = new TransWordInfoExample();
         TransWordInfoExample.Criteria criteria = transWordInfoExample.createCriteria();

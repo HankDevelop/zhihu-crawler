@@ -22,6 +22,7 @@ import org.asynchttpclient.proxy.ProxyServer;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
@@ -130,13 +131,31 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
                     DictQueryInfoExample.Criteria criteria = dictQueryInfoExample.createCriteria();
                     criteria.andRequestUriEqualTo(crawlerMessage.getUrl());
                     criteria.andRequestInfoEqualTo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
-                    List<DictQueryInfo> dictQueryInfos = getDictQueryInfoDao().selectByExample(dictQueryInfoExample);
-                    if (dictQueryInfos != null && !dictQueryInfos.isEmpty()) {
-                        DictQueryInfo dictQueryInfo = dictQueryInfos.get(0);
+                    Optional<DictQueryInfo> queryInfo = Optional.ofNullable(getDictQueryInfoDao().selectUniqueByExample(dictQueryInfoExample));
+                    if(queryInfo.isPresent()){
+                        DictQueryInfo dictQueryInfo = queryInfo.get();
+                        Optional<Integer> respCode = Optional.ofNullable(dictQueryInfo.getRespCode());
+                        if (respCode.isPresent() && HttpStatus.SC_OK == respCode.get()) {
+                            dictQueryInfo.setCalls(Optional.ofNullable(dictQueryInfo.getRespCode()).isPresent() ? dictQueryInfo.getCalls() + 1 : 1);
+                            dictQueryInfo.setModifyTime(new Date());
+                            getDictQueryInfoDao().updateByPrimaryKeySelective(dictQueryInfo);
+                        } else {
+                            dictQueryInfo.setCalls(1);
+                            dictQueryInfo.setRespCode(HttpStatus.SC_OK);
+                            dictQueryInfo.setRespTxt(page.getHtml());
+                            dictQueryInfo.setModifyTime(new Date());
+                            getDictQueryInfoDao().updateByExampleWithBLOBs(dictQueryInfo, dictQueryInfoExample);
+                        }
+                    } else {
+                        DictQueryInfo dictQueryInfo = new DictQueryInfo();
+                        dictQueryInfo.setRequestUri(crawlerMessage.getUrl());
+                        dictQueryInfo.setRequestInfo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
+                        dictQueryInfo.setCreateTime(new Date());
+                        dictQueryInfo.setCalls(1);
                         dictQueryInfo.setRespCode(HttpStatus.SC_OK);
                         dictQueryInfo.setRespTxt(page.getHtml());
                         dictQueryInfo.setModifyTime(new Date());
-                        getDictQueryInfoDao().updateByExampleWithBLOBs(dictQueryInfo, dictQueryInfoExample);
+                        getDictQueryInfoDao().insert(dictQueryInfo);
                     }
                 } else {
                     log.error(logStr);
