@@ -2,6 +2,7 @@ package com.crawl.tohoku.support;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.crawl.tohoku.TohokuConstants;
 import com.crawl.tohoku.dao.DictQueryInfoDao;
 import com.crawl.tohoku.entity.DictQueryInfo;
 import com.crawl.tohoku.entity.DictQueryInfoExample;
@@ -38,8 +39,6 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
     @Getter
     @Setter
     protected String url;
-
-    protected Request asyncRequest;
 
     @Getter
     protected final static Function<String, Boolean> jsonPageBannedFunction = (String s) -> !s.contains("login_status");
@@ -96,6 +95,7 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
             boolean useProxy = false;
             if (url != null) {
                 if (proxyFlag && crawlerMessage.getCurrentRetryTimes() > 0) {
+                    // && crawlerMessage.getCurrentRetryTimes() > 0
                     currentProxy = getProxyQueue().takeProxy(getProxyQueueName());
                     if (Objects.nonNull(currentProxy) && !(currentProxy.getIp().equals(LocalIPService.getLocalIp()))) {
                         useProxy = true;
@@ -122,43 +122,45 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
             if (Objects.nonNull(page)) {
                 int status = page.getStatusCode();
                 String logStr = Thread.currentThread().getName() + " " + currentProxy +
-                        "  executing request " + page.getUrl() + " response statusCode:" + status +
+                        "  executing request " + page.getUrl() + crawlerMessage.getMessageContext().toString() + " response statusCode:" + status +
                         "  request cost time:" + (requestEndTime - requestStartTime) + "ms";
+                log.info(logStr);
                 if (status == HttpStatus.SC_OK && !responseError(page)) {
                     ProxyUtil.handleResponseSuccProxy(currentProxy);
                     handle(page);
-                    DictQueryInfoExample dictQueryInfoExample = new DictQueryInfoExample();
-                    DictQueryInfoExample.Criteria criteria = dictQueryInfoExample.createCriteria();
-                    criteria.andRequestUriEqualTo(crawlerMessage.getUrl());
-                    criteria.andRequestInfoEqualTo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
-                    Optional<DictQueryInfo> queryInfo = Optional.ofNullable(getDictQueryInfoDao().selectUniqueByExample(dictQueryInfoExample));
-                    if(queryInfo.isPresent()){
-                        DictQueryInfo dictQueryInfo = queryInfo.get();
-                        Optional<Integer> respCode = Optional.ofNullable(dictQueryInfo.getRespCode());
-                        if (respCode.isPresent() && HttpStatus.SC_OK == respCode.get()) {
-                            dictQueryInfo.setCalls(Optional.ofNullable(dictQueryInfo.getRespCode()).isPresent() ? dictQueryInfo.getCalls() + 1 : 1);
-                            dictQueryInfo.setModifyTime(new Date());
-                            getDictQueryInfoDao().updateByPrimaryKeySelective(dictQueryInfo);
+                    if(page.getUrl().startsWith(TohokuConstants.TOHOKU_KDIC_URL) || page.getUrl().startsWith(TohokuConstants.TOHOKU_MANCHU_URL)) {
+                        DictQueryInfoExample dictQueryInfoExample = new DictQueryInfoExample();
+                        DictQueryInfoExample.Criteria criteria = dictQueryInfoExample.createCriteria();
+                        criteria.andRequestUriEqualTo(crawlerMessage.getUrl());
+                        criteria.andRequestInfoEqualTo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
+                        Optional<DictQueryInfo> queryInfo = Optional.ofNullable(getDictQueryInfoDao().selectUniqueByExample(dictQueryInfoExample));
+                        if (queryInfo.isPresent()) {
+                            DictQueryInfo dictQueryInfo = queryInfo.get();
+                            Optional<Integer> respCode = Optional.ofNullable(dictQueryInfo.getRespCode());
+                            if (respCode.isPresent() && HttpStatus.SC_OK == respCode.get()) {
+                                dictQueryInfo.setCalls(Optional.ofNullable(dictQueryInfo.getRespCode()).isPresent() ? dictQueryInfo.getCalls() + 1 : 1);
+                                dictQueryInfo.setModifyTime(new Date());
+                                getDictQueryInfoDao().updateByPrimaryKeySelective(dictQueryInfo);
+                            } else {
+                                dictQueryInfo.setCalls(1);
+                                dictQueryInfo.setRespCode(HttpStatus.SC_OK);
+                                dictQueryInfo.setRespTxt(page.getHtml());
+                                dictQueryInfo.setModifyTime(new Date());
+                                getDictQueryInfoDao().updateByExampleWithBLOBs(dictQueryInfo, dictQueryInfoExample);
+                            }
                         } else {
+                            DictQueryInfo dictQueryInfo = new DictQueryInfo();
+                            dictQueryInfo.setRequestUri(crawlerMessage.getUrl());
+                            dictQueryInfo.setRequestInfo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
+                            dictQueryInfo.setCreateTime(new Date());
                             dictQueryInfo.setCalls(1);
                             dictQueryInfo.setRespCode(HttpStatus.SC_OK);
                             dictQueryInfo.setRespTxt(page.getHtml());
                             dictQueryInfo.setModifyTime(new Date());
-                            getDictQueryInfoDao().updateByExampleWithBLOBs(dictQueryInfo, dictQueryInfoExample);
+                            getDictQueryInfoDao().insert(dictQueryInfo);
                         }
-                    } else {
-                        DictQueryInfo dictQueryInfo = new DictQueryInfo();
-                        dictQueryInfo.setRequestUri(crawlerMessage.getUrl());
-                        dictQueryInfo.setRequestInfo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
-                        dictQueryInfo.setCreateTime(new Date());
-                        dictQueryInfo.setCalls(1);
-                        dictQueryInfo.setRespCode(HttpStatus.SC_OK);
-                        dictQueryInfo.setRespTxt(page.getHtml());
-                        dictQueryInfo.setModifyTime(new Date());
-                        getDictQueryInfoDao().insert(dictQueryInfo);
                     }
                 } else {
-                    log.error(logStr);
                     ProxyUtil.handleResponseFailedProxy(currentProxy);
                     retry();
                 }
@@ -186,6 +188,7 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
             }
+            log.info("当前请求执行完成，请求信息：{}", crawlerMessage);
         }
     }
 

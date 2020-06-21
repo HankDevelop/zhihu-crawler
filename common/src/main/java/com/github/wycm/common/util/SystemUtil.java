@@ -10,7 +10,7 @@ public class SystemUtil {
 
     public static int getRecommendThreadSize(){
         int calcTaskTime = 200;
-        int waitTime = 3000;
+        int waitTime = 1000;
         return getCpuCoreSize() * (calcTaskTime + waitTime) / calcTaskTime;
     }
 

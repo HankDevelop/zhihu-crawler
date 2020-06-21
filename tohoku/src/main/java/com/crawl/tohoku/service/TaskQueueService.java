@@ -1,12 +1,10 @@
 package com.crawl.tohoku.service;
 
-import com.alibaba.druid.support.json.JSONUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.crawl.tohoku.dao.DictQueryInfoDao;
 import com.crawl.tohoku.entity.DictQueryInfo;
 import com.crawl.tohoku.entity.DictQueryInfoExample;
-import com.crawl.tohoku.entity.TransWordInfoExample;
 import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
 import com.github.wycm.common.Proxy;
@@ -14,15 +12,12 @@ import com.github.wycm.common.util.CrawlerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -52,12 +47,11 @@ public class TaskQueueService {
         if (queryInfo.isPresent()) {
             Optional<Integer> respCode = Optional.ofNullable(queryInfo.get().getRespCode());
             if (respCode.isPresent() && HttpStatus.SC_OK == respCode.get()) {
-                log.info(queryInfo.toString());
+                log.debug(queryInfo.toString());
+                return true;
             }
-        } else {
-            return sendTask(queueName, JSON.toJSONString(message), maxLength);
         }
-        return true;
+        return sendTask(queueName, JSON.toJSONString(message), maxLength);
     }
 
     public boolean sendTask(String queueName, String message, int maxLength) {
@@ -107,8 +101,11 @@ public class TaskQueueService {
                     criteria.andRequestUriEqualTo(crawlerMessage.getUrl());
                     criteria.andRequestInfoEqualTo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
                     Optional<DictQueryInfo> queryInfo = Optional.ofNullable(dictQueryInfoDao.selectUniqueByExample(dictQueryInfoExample));
-                    if (queryInfo.isPresent() && HttpStatus.SC_OK != queryInfo.get().getRespCode()) {
-                        continue;
+                    if (queryInfo.isPresent()) {
+                        if (Optional.ofNullable(queryInfo.get().getRespCode()).isPresent() && HttpStatus.SC_OK == queryInfo.get().getRespCode()) {
+                            continue;
+                        }
+                        log.info("receiveTask msg {} from queue {}", crawlerMessage, queueName);
                     } else {
                         DictQueryInfo dictQueryInfo = new DictQueryInfo();
                         dictQueryInfo.setRequestUri(crawlerMessage.getUrl());
