@@ -56,7 +56,7 @@ public abstract class DictContentListParser implements ListPageParser<TransWordI
         if (tmpStr.startsWith(LOAD_DIC_IMAGE)) {
             String dictType = tmpStr.substring(tmpStr.indexOf("(") + 1, tmpStr.indexOf(","));
             String srcId = tmpStr.substring(tmpStr.indexOf("'") + 1, tmpStr.lastIndexOf("'"));
-            String sourceUrl = String.format(TohokuConstants.DOWNLOAD_URL, dictType, srcId);
+            String sourceUrl = String.format(TohokuConstants.IMAGE_VIEWER_URL, dictType, srcId);
             transWordInfo.setSourceUrl(sourceUrl);
             transWordInfo.setDictType(dictType);
             transWordInfo.setRealPath(srcId);

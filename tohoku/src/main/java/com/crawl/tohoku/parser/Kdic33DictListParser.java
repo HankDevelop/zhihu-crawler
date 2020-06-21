@@ -4,6 +4,7 @@ import com.crawl.tohoku.TohokuConstants;
 import com.crawl.tohoku.entity.TransWordInfo;
 import com.github.wycm.common.Page;
 import com.github.wycm.common.parser.ListPageParser;
+import com.github.wycm.common.util.PhraseTranslateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,7 +26,7 @@ public class Kdic33DictListParser extends DictContentListParser implements ListP
 
     @Override
     protected String parseTransWord(Element rowItem) {
-        return rowItem.select("td:eq(1)").text();
+        return PhraseTranslateUtils.formatBlankInfo(rowItem.select("td:eq(1)").text());
     }
 
     @Override

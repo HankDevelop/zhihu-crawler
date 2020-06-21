@@ -30,9 +30,9 @@ public class TohokuConstants {
      */
     public final static String TOHOKU_KDIC_URL = "http://hkuri.cneas.tohoku.ac.jp/project1/kdic/listAction";
     /**
-     * 图片下载地址URL
+     * 图片预览地址URL
      */
-    public static String DOWNLOAD_URL = TOHOKU_START_URL + "/project1/imageviewer/detail?dicId=%s&imageFileName=%s";
+    public static String IMAGE_VIEWER_URL = TOHOKU_START_URL + "/project1/imageviewer/detail?dicId=%s&imageFileName=%s";
     /**
      * 图片存储地址
      */

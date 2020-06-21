@@ -23,7 +23,7 @@ public class ProxyPageProxyTestReceiver extends BaseReceiver {
     @Autowired
     private TaskQueueService taskQueueService;
 
-    @PostConstruct
+//    @PostConstruct
     @Override
     public void receive() {
         if ("test".equals(System.getProperties().getProperty("env"))) {

@@ -17,12 +17,15 @@ import io.netty.handler.codec.http.HttpStatusClass;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.HttpStatus;
 import org.asynchttpclient.proxy.ProxyServer;
 
+import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
@@ -165,6 +168,7 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
                 }
             } else {
                 log.error("请求失败，未返回结果，请求信息：{}", crawlerMessage.toString());
+                Thread.sleep(1000);
             }
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);
@@ -197,7 +201,7 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
      *
      * @param page
      */
-    protected abstract void handle(Page page);
+    protected abstract void handle(Page page) throws FileNotFoundException;
 
 
     protected void receiveNewTask() throws InterruptedException {

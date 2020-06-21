@@ -27,7 +27,7 @@ public class ProxyPageDownloadTaskReceiver extends BaseReceiver {
     private ProxyPageDownloadTaskSender taskSender;
 
     @Override
-    @PostConstruct
+//    @PostConstruct
     public void receive() {
         ThreadPoolUtil
                 .getThreadPool(TohokuProxyPageDownloadTask.class)

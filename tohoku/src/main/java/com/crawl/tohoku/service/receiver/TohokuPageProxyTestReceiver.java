@@ -19,7 +19,7 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 @NoArgsConstructor
 public class TohokuPageProxyTestReceiver extends BaseReceiver {
 
-    @PostConstruct
+//    @PostConstruct
     @Override
     public void receive() {
         if ("test".equals(System.getProperties().getProperty("env"))) {

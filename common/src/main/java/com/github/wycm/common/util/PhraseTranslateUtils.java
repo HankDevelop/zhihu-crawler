@@ -8,13 +8,19 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.regex.Pattern.compile;
+
 public class PhraseTranslateUtils {
 
     private static final String WORD_POS_PREFIX = "[\\[|〔|〈|<]";
     private static final String WORD_POS_SUFFIX = "[\\]|〕|〉|>]";
     private static final String WORD_POS_PATTERN = WORD_POS_PREFIX + "[^x00-xff]+?" + WORD_POS_SUFFIX;
-    private static Pattern posPattern = Pattern.compile(WORD_POS_PATTERN);
 
+    private static final String BLANK_PATTERN = "\\s+|\t|\r|\n";
+    private static final String TXT_BLANK_PATTERN = "\\s+|\t";
+    private static Pattern posPattern = compile(WORD_POS_PATTERN);
+    private static Pattern blankPattern = compile(BLANK_PATTERN);
+    private static Pattern txtBlankPattern = compile(TXT_BLANK_PATTERN);
 
     /**
      * 将待翻译文本拆分为语句
@@ -68,10 +74,10 @@ public class PhraseTranslateUtils {
     private static final String NO_INTERPRETATION_WORD_TRANS_PATTERN = WORD_TRANS_PREFIX + ".*";
     private static final String NO_ADVERB_INTERPRETATION_WORD_TRANS_PATTERN = WORD_TRANS_PREFIX + DONT_MATCH + ".*" + WORD_TRANS_SUFFIX + DONT_MATCH;
     private static final String WORD_TRANS_PATTERN = WORD_TRANS_PREFIX + ".*" + WORD_TRANS_SUFFIX;
-    private static Pattern transPattern = Pattern.compile(WORD_TRANS_PATTERN);
-    private static Pattern noAdverbTransPattern = Pattern.compile(NO_ADVERB_WORD_TRANS_PATTERN);
-    private static Pattern noInterpretationTransPattern = Pattern.compile(NO_INTERPRETATION_WORD_TRANS_PATTERN);
-    private static Pattern noAdverbInterpretationTransPattern = Pattern.compile(NO_ADVERB_INTERPRETATION_WORD_TRANS_PATTERN);
+    private static Pattern transPattern = compile(WORD_TRANS_PATTERN);
+    private static Pattern noAdverbTransPattern = compile(NO_ADVERB_WORD_TRANS_PATTERN);
+    private static Pattern noInterpretationTransPattern = compile(NO_INTERPRETATION_WORD_TRANS_PATTERN);
+    private static Pattern noAdverbInterpretationTransPattern = compile(NO_ADVERB_INTERPRETATION_WORD_TRANS_PATTERN);
 
     public static String parseDictTranslation(String dictTrans) {
         dictTrans = dictTrans.replaceAll("①|②", "");
@@ -85,7 +91,7 @@ public class PhraseTranslateUtils {
         if (matcher.find()) {
             String tempStr = matcher.group().replaceAll("]|〕", "");
             Matcher tmpMatcher = transPattern.matcher(tempStr);
-            if(tmpMatcher.find()){
+            if (tmpMatcher.find()) {
                 return tmpMatcher.group().replaceAll(WORD_TRANS_PREFIX, "").replaceAll(WORD_TRANS_SUFFIX, "").trim();
             }
             return matcher.group().replaceAll(WORD_TRANS_PREFIX, "").replaceAll(WORD_TRANS_SUFFIX, "").trim();
@@ -94,7 +100,7 @@ public class PhraseTranslateUtils {
             if (matcher.find()) {
                 String tempStr = matcher.group().replaceAll("]|〕", "");
                 Matcher tmpMatcher = noInterpretationTransPattern.matcher(tempStr);
-                if(tmpMatcher.find()){
+                if (tmpMatcher.find()) {
                     return tmpMatcher.group().replaceAll(WORD_TRANS_PREFIX, "").replaceAll(WORD_TRANS_SUFFIX, "").trim();
                 }
                 return matcher.group().replaceAll(WORD_TRANS_PREFIX, "").replaceAll(WORD_TRANS_SUFFIX, "").trim();
@@ -113,8 +119,25 @@ public class PhraseTranslateUtils {
         return "";
     }
 
+    public static String formatBlankInfo(String transWord) {
+        if (StringUtils.isBlank(transWord)) {
+            return "";
+        }
+        Matcher m = blankPattern.matcher(transWord);
+        return m.replaceAll(" ");
+    }
+
+    public static String formatTxtBlankInfo(String transWord) {
+        if (StringUtils.isBlank(transWord)) {
+            return "";
+        }
+        Matcher m = txtBlankPattern.matcher(transWord);
+        return m.replaceAll(" ");
+    }
+
     public static void main(String[] args) {
         String str = "acanjime isanjire tulergi gurun ubaliyambure kuren";
+        System.out.println(formatBlankInfo("test"));
         System.out.println(splitTransWords(str, 5));
         /**
          * [数]① 一， 一个： tere sargan jui be monGo de bufi, emu aniya i onGolo yala goidahak@ becehe. 《1?实》其女聘与蒙古，未及一年果亡。 fa i ninGude emu fempi bithe be sabufi, neifi tuwaci sargan jui beyei muribuha baita be giyan giyan i tucibume araha. 《11?聊》看到窗户上有一封信，拆开一看，是女子一五一十地备述自己的冤案。〔见窗上一函，开视，则女备述其冤状。〕②一样的，相同的： emu doro uhe mujin 道同志合。 emu oho de banjiha emcu halai ah@n 《38?庸》同母异父的哥哥。

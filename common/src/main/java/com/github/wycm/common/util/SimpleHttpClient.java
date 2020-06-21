@@ -13,6 +13,8 @@ import org.asynchttpclient.cookie.ThreadSafeCookieStore;
 import org.asynchttpclient.proxy.ProxyServer;
 import org.asynchttpclient.uri.Uri;
 import org.asynchttpclient.util.HttpConstants;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLException;
 import java.io.*;
@@ -35,7 +37,7 @@ public class SimpleHttpClient {
      */
     public final static Map<String, Semaphore> semaphoreMap = new ConcurrentHashMap<>();
 
-    private final static int MAX_CONCURRENT_COUNT = 3;
+    private final static int MAX_CONCURRENT_COUNT = 1;
 
     private int timeout = 60000;
 
@@ -162,6 +164,7 @@ public class SimpleHttpClient {
 
     /**
      * 下载图片
+     *
      * @param fileURL       文件地址
      * @param path          保存路径
      * @param saveFileName  文件名，包括后缀名
@@ -184,7 +187,9 @@ public class SimpleHttpClient {
                              Boolean isReplaceFile) {
         try {
             Response response = executeRequest(request);
-            log.debug("status:" + response.getStatusCode());
+            if (response.getStatusCode() != HttpStatus.OK.value()) {
+                throw new IllegalStateException("http请求:" + request.getUrl() + "响应错误：" + response.getStatusCode());
+            }
             File file = new File(path);
             //如果文件夹不存在则创建
             if (!file.exists() && !file.isDirectory()) {
@@ -219,12 +224,12 @@ public class SimpleHttpClient {
                     IOUtils.closeQuietly(os);
                 }
             } else {
-                log.debug("该文件存在！");
+                log.info("{} 文件存在！", saveFileName);
             }
         } catch (IllegalArgumentException e) {
             log.info("连接超时...");
         } catch (Exception e1) {
-            e1.printStackTrace();
+            log.error(e1.getMessage(), e1);
         }
     }
 

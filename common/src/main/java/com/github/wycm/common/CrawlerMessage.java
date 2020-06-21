@@ -2,6 +2,7 @@ package com.github.wycm.common;
 
 import lombok.Data;
 import lombok.ToString;
+import sun.plugin2.os.windows.Windows;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,8 @@ import java.util.Map;
 public class CrawlerMessage {
     private String url;
     private int currentRetryTimes = 0;
-    private String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
+    private String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0";
+
     private Map<String, String> headers = new HashMap<>();
     /**
      * 消息上下文

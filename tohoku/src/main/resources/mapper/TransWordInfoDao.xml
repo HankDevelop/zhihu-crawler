@@ -113,6 +113,10 @@
       </if>
     </if>
   </select>
+  <select id="selectImageSource" parameterType="java.lang.String" resultType="java.lang.String">
+    select source_url from trans_word_info
+    where dict_type = #{dictType,jdbcType=VARCHAR} group by source_url
+  </select>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />

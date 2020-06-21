@@ -5,6 +5,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.crawl.tohoku.dao.DictQueryInfoDao;
 import com.crawl.tohoku.entity.DictQueryInfo;
 import com.crawl.tohoku.entity.DictQueryInfoExample;
+import com.crawl.tohoku.task.DictImageDownloadTask;
 import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
 import com.github.wycm.common.Proxy;
@@ -80,7 +81,11 @@ public class TaskQueueService {
             Optional<Object> targetQueue = Optional.ofNullable(listOperations.rightPop(queueName, 5, TimeUnit.SECONDS));
             if (targetQueue.isPresent() && StringUtils.isNotBlank(targetQueue.get().toString())) {
                 s = targetQueue.get().toString();
-                if (StringUtils.isNotBlank(s) && !StringUtils.equals(queueName, CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class))) {
+                if(StringUtils.isBlank(s)){
+                    continue;
+                }
+                if (!StringUtils.equals(queueName, CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class))
+                        && !StringUtils.equals(queueName, CrawlerUtils.getTaskQueueName(DictImageDownloadTask.class))) {
                     crawlerMessage = JSON.parseObject(s, CrawlerMessage.class);
                     DictQueryInfoExample dictQueryInfoExample = new DictQueryInfoExample();
                     DictQueryInfoExample.Criteria criteria = dictQueryInfoExample.createCriteria();
@@ -103,7 +108,6 @@ public class TaskQueueService {
                 }
                 break;
             }
-            Thread.sleep(1000);
         }
         crawlerMessage = JSON.parseObject(s, CrawlerMessage.class);
         return crawlerMessage;
@@ -122,6 +126,10 @@ public class TaskQueueService {
         }
         Proxy proxy = JSON.parseObject(s, Proxy.class);
         return proxy;
+    }
+
+    public void clearQueue(String queueName){
+        redisTemplate.opsForList().trim(queueName, 1, -1);
     }
 
 }

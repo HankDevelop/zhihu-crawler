@@ -167,9 +167,9 @@ public class HttpClientUtil {
      * @param isReplaceFile 若存在文件时，是否还需要下载文件
      */
     public void downloadFile(String fileURL,
-                             String path,
-                             String saveFileName,
-                             Boolean isReplaceFile) {
+                                    String path,
+                                    String saveFileName,
+                                    Boolean isReplaceFile) {
         Request request = new RequestBuilder()
                 .setUrl(fileURL)
                 .setHeader(USER_AGENT, Constants.userAgentArray[new Random().nextInt(Constants.userAgentArray.length)])

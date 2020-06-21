@@ -27,6 +27,35 @@ public class Kdic33DictQueryTaskSender implements BaseSender {
     public void send() {
         log.info("start send Kdic33DictQueryTask dict message");
         Map<String, Integer> keyMaps = new HashMap<>();
+        keyMaps.put("a", 187);
+        keyMaps.put("b", 131);
+        keyMaps.put("c", 60);
+        keyMaps.put("d", 76);
+        keyMaps.put("e", 157);
+        keyMaps.put("f", 55);
+        keyMaps.put("g", 93);
+        keyMaps.put("h", 124);
+        keyMaps.put("i", 200);
+        keyMaps.put("j", 56);
+        keyMaps.put("k", 90);
+        keyMaps.put("l", 96);
+        keyMaps.put("m", 128);
+        keyMaps.put("n", 153);
+        keyMaps.put("o", 74);
+        keyMaps.put("p", 4);
+        keyMaps.put("q", 0);
+        keyMaps.put("r", 194);
+        keyMaps.put("s", 159);
+        keyMaps.put("t", 109);
+        keyMaps.put("u", 239);
+        keyMaps.put("v", 89);
+        keyMaps.put("w", 45);
+        keyMaps.put("x", 47);
+        keyMaps.put("y", 89);
+        keyMaps.put("z", 2);
+        //keyMaps.put("@", 257);
+
+        /*
         keyMaps.put("a", 1133);
         keyMaps.put("b", 874);
         keyMaps.put("c", 360);
@@ -54,12 +83,13 @@ public class Kdic33DictQueryTaskSender implements BaseSender {
         keyMaps.put("y", 373);
         keyMaps.put("z", 6);
         keyMaps.put("@", 257);
+         */
         Map<String, List<String>> paramMap = new HashMap<>();
         paramMap.put("searchRange", Arrays.asList("1"));
         paramMap.put("searchMethod", Arrays.asList("4"));
         paramMap.put("groupId", Arrays.asList("33"));
         paramMap.put("pageSize", Arrays.asList("50"));
-        paramMap.put("dicIds", Arrays.asList("73,74"));
+        paramMap.put("dicIds", Arrays.asList("66")); // 73,74
         boolean isSend = true;
         for (String keyWord : keyMaps.keySet()) {
             int keyRows = keyMaps.get(keyWord).intValue();

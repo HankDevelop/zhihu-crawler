@@ -1,10 +1,10 @@
 package com.crawl.tohoku.service.receiver;
 
+import com.crawl.tohoku.service.sender.DictImageDownloadTaskSender;
 import com.crawl.tohoku.service.sender.Kdic33DictQueryTaskSender;
+import com.crawl.tohoku.task.DictImageDownloadTask;
 import com.crawl.tohoku.task.Kdic33DictQueryTask;
-import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
-import com.github.wycm.common.util.CrawlerUtils;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,30 +13,28 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
-
 @Slf4j
 @Service
 @NoArgsConstructor
-public class Kdic33DictQueryTaskReceiver extends BaseReceiver{
+public class DictImageDownloadTaskReceiver extends BaseReceiver{
 
     @Autowired
-    private Kdic33DictQueryTaskSender taskSender;
+    private DictImageDownloadTaskSender taskSender;
 
     @Override
-//    @PostConstruct
+    @PostConstruct
     public void receive() {
         ThreadPoolUtil
-                .getThreadPool(Kdic33DictQueryTask.class)
+                .getThreadPool(DictImageDownloadTask.class)
                 .execute(() -> {
                     taskSender.send();
                 });
-        receive(Kdic33DictQueryTask.class);
+        receive(DictImageDownloadTask.class);
     }
 
     @Override
     protected Runnable createNewTask(CrawlerMessage crawlerMessage) {
-        Kdic33DictQueryTask task = new Kdic33DictQueryTask(crawlerMessage, tohokuComponent);
+        DictImageDownloadTask task = new DictImageDownloadTask(crawlerMessage, tohokuComponent);
         task.setUrl(crawlerMessage.getUrl());
         task.setCurrentRetryTimes(crawlerMessage.getCurrentRetryTimes());
         task.setProxyFlag(true);

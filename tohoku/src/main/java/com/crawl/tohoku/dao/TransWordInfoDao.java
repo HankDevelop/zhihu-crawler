@@ -18,6 +18,8 @@ public interface TransWordInfoDao {
 
     List<TransWordInfo> selectByExample(TransWordInfoExample example);
 
+    List<String> selectImageSource(String dictType);
+
     TransWordInfo selectByPrimaryKey(Long id);
 
     int updateByExampleSelective(@Param("record") TransWordInfo record, @Param("example") TransWordInfoExample example);

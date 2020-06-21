@@ -61,7 +61,7 @@ public class Manchu11DictQueryTaskSender implements BaseSender {
         paramMap.put("searchMethod", Arrays.asList("4"));
         paramMap.put("groupId", Arrays.asList("33"));
         paramMap.put("pageSize", Arrays.asList("50"));
-        paramMap.put("dicIds", Arrays.asList("73,74"));
+        paramMap.put("dicIds", Arrays.asList("66"));  //73,74
         for (String keyWord : keyMaps.keySet()) {
             int keyRows = keyMaps.get(keyWord).intValue();
             List<Integer> list = new ArrayList();
