@@ -1,18 +1,11 @@
 package com.crawl.tohoku;
 
-import com.crawl.tohoku.entity.TransWordInfo;
 import com.github.wycm.common.LocalIPService;
 import com.github.wycm.common.util.SimpleHttpClient;
 import com.github.wycm.proxy.AbstractHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.JedisPool;
-
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**

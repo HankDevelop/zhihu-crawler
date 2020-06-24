@@ -3,8 +3,8 @@ package com.github.wycm.proxy;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.SimpleHttpClient;
 import com.github.wycm.proxy.util.ProxyUtil;
+import io.netty.handler.codec.http.HttpStatusClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.asynchttpclient.Response;
 import org.asynchttpclient.proxy.ProxyServer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +79,7 @@ public abstract class AbstractHttpClient {
                 page.setProxy(currentProxy);
                 int status = page.getStatusCode();
 
-                if(status == HttpStatus.SC_OK){
+                if(HttpStatusClass.valueOf(status) == HttpStatusClass.SUCCESS){
                     if (ipBannedFunction.apply(page.getHtml())){
                         log.warn("response error, url:{}, response:{}, discard ip:{}, port:{}", crawlerMessage.getUrl(), page.getHtml(), currentProxy.getIp(), currentProxy.getPort());
                         throw new ExecutionException(new Throwable("response error"));
@@ -131,7 +131,7 @@ public abstract class AbstractHttpClient {
                 page.setProxy(currentProxy);
                 int status = page.getStatusCode();
 
-                if(status == HttpStatus.SC_OK){
+                if(HttpStatusClass.valueOf(status) == HttpStatusClass.SUCCESS){
                     if (ipBannedFunction.apply(page.getHtml())){
                         log.warn("response error, url:{}, response:{}, discard ip:{}, port:{}", crawlerMessage.getUrl(), page.getHtml(), currentProxy.getIp(), currentProxy.getPort());
                         throw new ExecutionException(new Throwable("response error"));

@@ -9,17 +9,19 @@ import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
 import com.github.wycm.common.Proxy;
 import com.github.wycm.common.util.CrawlerUtils;
+import io.netty.handler.codec.http.HttpStatusClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -30,7 +32,7 @@ import java.util.function.Consumer;
 public class TaskQueueService {
 
     @Autowired
-    private JedisPool jedisPool;
+    private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private DictQueryInfoDao dictQueryInfoDao;
 
@@ -59,41 +61,25 @@ public class TaskQueueService {
     }
 
     public boolean sendTask(String queueName, String message, int maxLength, Consumer<String> sendSuccConsumer) {
-        Jedis jedis = jedisPool.getResource();
-        try {
-            if (jedis.llen(queueName) < maxLength) {
-                jedis.lpush(queueName, message);
-                if (Objects.nonNull(sendSuccConsumer)) {
-                    sendSuccConsumer.accept(message);
-                }
-            } else {
-                log.debug("queue is full, queueName:{}", queueName);
-                return false;
-            }
-        } finally {
-            jedis.close();
+        redisTemplate.opsForList().leftPush(queueName, message);
+        if (Objects.nonNull(sendSuccConsumer)) {
+            sendSuccConsumer.accept(message);
         }
         return true;
     }
 
     public Long queueSize(String queueName) {
-        Long s = 0L;
-        Jedis jedis = jedisPool.getResource();
-        try {
-            s = jedis.llen(queueName);
-        } finally {
-            jedis.close();
-        }
-        return s;
+        return redisTemplate.opsForList().size(queueName);
     }
 
     public CrawlerMessage receiveTask(String queueName) throws InterruptedException {
         CrawlerMessage crawlerMessage = null;
         String s = "";
+        ListOperations listOperations = redisTemplate.opsForList();
         while (true) {
-            Jedis jedis = jedisPool.getResource();
-            try {
-                s = jedis.rpop(queueName);
+            Optional<Object> targetQueue = Optional.ofNullable(listOperations.rightPop(queueName, 5, TimeUnit.SECONDS));
+            if (targetQueue.isPresent() && StringUtils.isNotBlank(targetQueue.get().toString())) {
+                s = targetQueue.get().toString();
                 if (StringUtils.isNotBlank(s) && !StringUtils.equals(queueName, CrawlerUtils.getTaskQueueName(TohokuProxyPageDownloadTask.class))) {
                     crawlerMessage = JSON.parseObject(s, CrawlerMessage.class);
                     DictQueryInfoExample dictQueryInfoExample = new DictQueryInfoExample();
@@ -102,7 +88,8 @@ public class TaskQueueService {
                     criteria.andRequestInfoEqualTo(JSON.toJSONString(crawlerMessage.getMessageContext(), SerializerFeature.MapSortField));
                     Optional<DictQueryInfo> queryInfo = Optional.ofNullable(dictQueryInfoDao.selectUniqueByExample(dictQueryInfoExample));
                     if (queryInfo.isPresent()) {
-                        if (Optional.ofNullable(queryInfo.get().getRespCode()).isPresent() && HttpStatus.SC_OK == queryInfo.get().getRespCode()) {
+                        Integer respCode = queryInfo.get().getRespCode();
+                        if (Optional.ofNullable(respCode).isPresent() && HttpStatusClass.valueOf(respCode.intValue()) == HttpStatusClass.SUCCESS) {
                             continue;
                         }
                         log.info("receiveTask msg {} from queue {}", crawlerMessage, queueName);
@@ -114,10 +101,6 @@ public class TaskQueueService {
                         dictQueryInfoDao.insert(dictQueryInfo);
                     }
                 }
-            } finally {
-                jedis.close();
-            }
-            if (StringUtils.isNotBlank(s)) {
                 break;
             }
             Thread.sleep(1000);
@@ -128,14 +111,11 @@ public class TaskQueueService {
 
     public Proxy receiveProxyTask(String queueName) throws InterruptedException {
         String s = "";
+        ListOperations listOperations = redisTemplate.opsForList();
         while (true) {
-            Jedis jedis = jedisPool.getResource();
-            try {
-                s = jedis.rpop(queueName);
-            } finally {
-                jedis.close();
-            }
-            if (StringUtils.isNotBlank(s)) {
+            Optional<Object> targetQueue = Optional.ofNullable(listOperations.rightPop(queueName, 5, TimeUnit.SECONDS));
+            if (targetQueue.isPresent() && StringUtils.isNotBlank(targetQueue.get().toString())) {
+                s = targetQueue.get().toString();
                 break;
             }
             Thread.sleep(1000);

@@ -1,24 +1,17 @@
 package com.crawl.tohoku.service.sender;
 
 import com.alibaba.fastjson.JSON;
+import com.crawl.tohoku.service.TaskQueueService;
 import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
 import com.github.wycm.common.CrawlerMessage;
-import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.util.CrawlerUtils;
 import com.github.wycm.common.util.RedisLockUtil;
 import com.github.wycm.proxy.ProxyPageProxyPool;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.UUID;
-
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 @Slf4j
 @Service
@@ -30,7 +23,7 @@ public class ProxyPageDownloadTaskSender implements BaseSender {
 
     private static final int initQueueSize = 1000;
 
-//    @Scheduled(initialDelay = 1000, fixedDelay = 1000)
+    //    @Scheduled(initialDelay = 1000, fixedDelay = 1000)
     public void send() {
         log.debug("start send ProxyPageDownloadTask message");
 

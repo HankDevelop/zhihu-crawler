@@ -1,13 +1,12 @@
 package com.github.wycm.proxy;
 
 import com.github.wycm.common.LocalIPService;
-import com.github.wycm.common.util.SimpleHttpClient;
 import com.github.wycm.common.util.CrawlerUtils;
+import com.github.wycm.common.util.SimpleHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.asynchttpclient.cookie.CookieStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.JedisPool;
 
 
 @Slf4j

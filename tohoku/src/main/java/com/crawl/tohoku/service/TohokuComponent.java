@@ -5,7 +5,10 @@ import com.crawl.tohoku.dao.DictQueryInfoDao;
 import com.crawl.tohoku.dao.TransWordInfoDao;
 import com.crawl.tohoku.parser.Kdic33DictListParser;
 import com.crawl.tohoku.parser.Manchu11DictListParser;
-import com.crawl.tohoku.task.*;
+import com.crawl.tohoku.task.Kdic33DictQueryTask;
+import com.crawl.tohoku.task.TohokuPageProxyTestTask;
+import com.crawl.tohoku.task.TohokuProxyPageDownloadTask;
+import com.crawl.tohoku.task.TohokuProxyPageProxyTestTask;
 import com.github.wycm.common.CommonProperties;
 import com.github.wycm.common.LocalIPService;
 import com.github.wycm.common.ProxyQueue;
@@ -16,8 +19,8 @@ import com.github.wycm.proxy.ProxyHttpClient;
 import com.github.wycm.proxy.ProxyPageProxyPool;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.JedisPool;
 
 import javax.annotation.PostConstruct;
 
@@ -26,7 +29,7 @@ import javax.annotation.PostConstruct;
 public class TohokuComponent {
 
     @Autowired
-    private JedisPool jedisPool;
+    private RedisTemplate redisTemplate;
 
     @Autowired
     private ProxyQueue proxyQueue;

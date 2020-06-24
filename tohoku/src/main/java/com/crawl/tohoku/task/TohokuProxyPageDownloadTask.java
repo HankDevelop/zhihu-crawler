@@ -5,22 +5,22 @@ import com.crawl.tohoku.TohokuConstants;
 import com.crawl.tohoku.dao.DictQueryInfoDao;
 import com.crawl.tohoku.service.TaskQueueService;
 import com.crawl.tohoku.service.TohokuComponent;
+import com.crawl.tohoku.support.AbstractPageTask;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.Constants;
 import com.github.wycm.common.util.CrawlerUtils;
 import com.github.wycm.common.util.RedisLockUtil;
 import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.proxy.AbstractHttpClient;
-import com.crawl.tohoku.support.AbstractPageTask;
 import com.github.wycm.proxy.ProxyListPageParser;
 import com.github.wycm.proxy.ProxyPageProxyPool;
 import com.github.wycm.proxy.site.ProxyListPageParserFactory;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import org.springframework.data.redis.core.RedisTemplate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -95,32 +95,21 @@ public class TohokuProxyPageDownloadTask extends AbstractPageTask implements Run
         List<Proxy> proxyList = parser.parse(page.getHtml());
         for (Proxy p : proxyList) {
             String proxyPagekey = TohokuConstants.PROXY_PAGE_REDIS_KEY_PREFIX + getProxyStr(p);
-            Jedis jedis = getJedisPool().getResource();
-            boolean containFlag;
-            try {
-                containFlag = jedis.exists(proxyPagekey);
-            } finally {
-                jedis.close();
-            }
+            boolean containFlag = getRedisTemplate().countExistingKeys(Collections.singleton(proxyPagekey)) > 0;
             if (!containFlag) {
                 String requestId = UUID.randomUUID().toString();
                 if (getRedisLockUtil().lock(proxyPagekey, requestId, Constants.REDIS_TIMEOUT * 1000)) {
                     getTaskQueueService().sendTask(CrawlerUtils.getTaskQueueName(TohokuProxyPageProxyTestTask.class), JSON.toJSONString(p), 100000);
                 }
             }
-            String zhihuPageKey = TohokuConstants.TOHOKU_PAGE_REDIS_KEY_PREFIX + getProxyStr(p);
+            String tohokuPageKey = TohokuConstants.TOHOKU_PAGE_REDIS_KEY_PREFIX + getProxyStr(p);
             Proxy copyProxy = new Proxy();
             BeanUtils.copyProperties(p, copyProxy);
             p = copyProxy;
-            jedis = getJedisPool().getResource();
-            try {
-                containFlag = jedis.exists(zhihuPageKey);
-            } finally {
-                jedis.close();
-            }
+            containFlag = getRedisTemplate().countExistingKeys(Collections.singleton(tohokuPageKey)) > 0;
             if (!containFlag) {
                 String requestId = UUID.randomUUID().toString();
-                if (getRedisLockUtil().lock(zhihuPageKey, requestId, Constants.REDIS_TIMEOUT * 1000)) {
+                if (getRedisLockUtil().lock(tohokuPageKey, requestId, Constants.REDIS_TIMEOUT * 1000)) {
                     getTaskQueueService().sendTask(CrawlerUtils.getTaskQueueName(TohokuPageProxyTestTask.class), JSON.toJSONString(p), 100000);
                 }
             }
@@ -141,12 +130,12 @@ public class TohokuProxyPageDownloadTask extends AbstractPageTask implements Run
         log.info("create new {} success", this.getClass().getSimpleName());
     }
 
-    private JedisPool getJedisPool(){
-        return tohokuComponent.getJedisPool();
-    }
-
     private RedisLockUtil getRedisLockUtil(){
         return tohokuComponent.getRedisLockUtil();
+    }
+
+    private RedisTemplate getRedisTemplate(){
+        return tohokuComponent.getRedisTemplate();
     }
 
     private String getProxyStr(Proxy proxy) {

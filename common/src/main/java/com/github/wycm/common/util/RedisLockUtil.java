@@ -1,24 +1,38 @@
 package com.github.wycm.common.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.connection.ReturnType;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
-import java.util.Collections;
+import javax.annotation.Resource;
+import java.nio.charset.Charset;
 
 @Slf4j
 @Component
 public class RedisLockUtil {
 
-    private static final String LOCK_SUCCESS = "OK";
-    private static final String SET_IF_NOT_EXIST = "NX";
-    private static final String SET_WITH_EXPIRE_TIME = "PX";
-    private static final Long RELEASE_SUCCESS = 1L;
+    @Resource
+    private RedisTemplate redisTemplate;
 
-    @Autowired
-    private JedisPool jedisPool;
+    public static final String UNLOCK_LUA;
+
+    /**
+     * 释放锁脚本，原子操作
+     */
+    static {
+        StringBuilder sb = new StringBuilder();
+        sb.append("if redis.call(\"get\",KEYS[1]) == ARGV[1] ");
+        sb.append("then ");
+        sb.append("    return redis.call(\"del\",KEYS[1]) ");
+        sb.append("else ");
+        sb.append("    return 0 ");
+        sb.append("end ");
+        UNLOCK_LUA = sb.toString();
+    }
 
     /**
      * 尝试获取分布式锁
@@ -28,19 +42,13 @@ public class RedisLockUtil {
      * @return 是否获取成功
      */
     public boolean lock(String lockKey, String requestId, int expireTime) {
-        if (jedisPool.isClosed()){
-            log.warn("jedisPool closed");
-            return false;
-        }
-        Jedis jedis = jedisPool.getResource();
-        String result = null;
-        try{
-            result = jedis.set(lockKey, requestId, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime);
-        } finally {
-            jedis.close();
-        }
-        if (LOCK_SUCCESS.equals(result)) {
-            return true;
+        try {
+            RedisCallback<Boolean> callback = (connection) -> {
+                return connection.set(lockKey.getBytes(Charset.forName("UTF-8")), requestId.getBytes(Charset.forName("UTF-8")), Expiration.milliseconds(expireTime), RedisStringCommands.SetOption.SET_IF_ABSENT);
+            };
+            return (Boolean) redisTemplate.execute(callback);
+        } catch (Exception e) {
+            log.error("redis lock error.", e);
         }
         return false;
 
@@ -52,18 +60,28 @@ public class RedisLockUtil {
      * @return 是否释放成功
      */
     public boolean unlock(String lockKey, String requestId) {
-        Jedis jedis = jedisPool.getResource();
-        String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
-        Object result = null;
+        RedisCallback<Boolean> callback = (connection) -> {
+            return connection.eval(UNLOCK_LUA.getBytes(), ReturnType.BOOLEAN, 1, lockKey.getBytes(Charset.forName("UTF-8")), requestId.getBytes(Charset.forName("UTF-8")));
+        };
+        return (Boolean) redisTemplate.execute(callback);
+    }
+
+    /**
+     * 获取Redis锁的value值
+     *
+     * @param lockKey
+     * @return
+     */
+    public String get(String lockKey) {
         try {
-            result = jedis.eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));
-        } finally {
-            jedis.close();
+            RedisCallback<String> callback = (connection) -> {
+                return new String(connection.get(lockKey.getBytes()), Charset.forName("UTF-8"));
+            };
+            return (String) redisTemplate.execute(callback);
+        } catch (Exception e) {
+            log.error("get redis occurred an exception", e);
         }
-        if (RELEASE_SUCCESS.equals(result)) {
-            return true;
-        }
-        return false;
+        return null;
     }
 
 }

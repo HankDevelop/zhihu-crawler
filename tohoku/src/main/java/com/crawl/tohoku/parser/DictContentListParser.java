@@ -14,7 +14,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 @Slf4j
-@Service
 public abstract class DictContentListParser implements ListPageParser<TransWordInfo> {
 
     public static final String LOAD_DIC_IMAGE = "loadDicImage";

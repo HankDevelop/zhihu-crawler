@@ -9,19 +9,18 @@ import com.crawl.tohoku.entity.DictQueryInfoExample;
 import com.crawl.tohoku.service.TaskQueueService;
 import com.github.wycm.common.*;
 import com.github.wycm.common.util.Constants;
-import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.common.util.CrawlerUtils;
+import com.github.wycm.common.util.ThreadPoolUtil;
 import com.github.wycm.proxy.AbstractHttpClient;
 import com.github.wycm.proxy.util.ProxyUtil;
+import io.netty.handler.codec.http.HttpStatusClass;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
-import org.asynchttpclient.Request;
 import org.asynchttpclient.proxy.ProxyServer;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -125,7 +124,7 @@ public abstract class AbstractPageTask implements Runnable, RetryHandler, Single
                         "  executing request " + page.getUrl() + crawlerMessage.getMessageContext().toString() + " response statusCode:" + status +
                         "  request cost time:" + (requestEndTime - requestStartTime) + "ms";
                 log.info(logStr);
-                if (status == HttpStatus.SC_OK && !responseError(page)) {
+                if (HttpStatusClass.valueOf(status) == HttpStatusClass.SUCCESS && !responseError(page)) {
                     ProxyUtil.handleResponseSuccProxy(currentProxy);
                     handle(page);
                     if(page.getUrl().startsWith(TohokuConstants.TOHOKU_KDIC_URL) || page.getUrl().startsWith(TohokuConstants.TOHOKU_MANCHU_URL)) {

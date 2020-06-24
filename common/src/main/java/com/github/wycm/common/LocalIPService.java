@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import redis.clients.jedis.JedisPool;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.ExecutionException;
@@ -23,9 +22,6 @@ public class LocalIPService {
     private volatile static String localIp = "";
 
     public final static int DIRECT_CONNECT_PORT = -1;
-
-    @Autowired
-    private JedisPool jedisPool;
 
     @Autowired
     private ProxyQueue proxyQueue;
